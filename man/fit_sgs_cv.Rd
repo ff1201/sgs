@@ -2,23 +2,31 @@
 % Please edit documentation in R/fit_sgs_cv.R
 \name{fit_sgs_cv}
 \alias{fit_sgs_cv}
-\title{Sparse-group SLOPE (SGS) with k-fold cross-validation}
+\title{fit an SGS model using CV}
 \usage{
 fit_sgs_cv(
   X,
   y,
   groups,
+  pen_method = 1,
   type = "linear",
+  nlambda = 20,
+  nfolds = 10,
   alpha = 0.95,
-  FDR = 0.1,
+  vFDR = 0.1,
   gFDR = 0.1,
-  backtracking = 0.8,
+  backtracking = 0.7,
   max_iter = 5000,
   max_iter_backtracking = 100,
   tol = 1e-05,
   min_frac = 0.05,
-  k = 10,
-  standardise = TRUE
+  standardise = "l2",
+  intercept = TRUE,
+  verbose = FALSE,
+  v_weights = NULL,
+  w_weights = NULL,
+  error_criteria = "mse",
+  max_lambda = NULL
 )
 }
 \arguments{
@@ -26,15 +34,26 @@ fit_sgs_cv(
 
 \item{y}{Output vector of dimension \eqn{n}.}
 
-\item{groups}{A vector for the grouping structure. Each input variable should have a group id.}
+\item{groups}{A grouping structure for the input data. Should take the form of a vector of group indices.}
 
-\item{type}{The model type. Supported values are: "linear".}
+\item{pen_method}{The type of penalty sequences to use.
+\itemize{
+\item \code{1} uses the vMean SGS and gMean gSLOPE sequences.
+\item \code{2} uses the vMax SGS and gMean gSLOPE sequences.
+\item \code{3} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
+}}
 
-\item{alpha}{Controls the level of sparsity between SLOPE and gSLOPE. Acts as in SGL. Must be in the range \eqn{[0,1]}. \code{alpha = 0} returns SLOPE and \code{alpha = 1} returns gSLOPE.}
+\item{type}{The type of regression to perform. Supported values are: "linear" and "logistic".}
 
-\item{FDR}{The target false-discovery rate at a variable level. This value is used to define the BH penalty sequence for the variables (\eqn{v}). Must be in the range \eqn{(0,1)}.}
+\item{nlambda}{The number of pathwise \eqn{\lambda} values to fit.}
 
-\item{gFDR}{The target false-discovery rate at a group level. This value is used to define the BH penalty sequence for the groups (\eqn{w}). Must be in the range \eqn{(0,1)}.}
+\item{nfolds}{The number of folds to use in cross-validation.}
+
+\item{alpha}{The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE.}
+
+\item{vFDR}{Defines the desired variable FDR level, which determines the shape of the variable penalties.}
+
+\item{gFDR}{Defines the desired group FDR level, which determines the shape of the group penalties.}
 
 \item{backtracking}{The backtracking parameter, as defined in Pedregosa et. al. (2018) as \eqn{\tau}.}
 
@@ -44,54 +63,55 @@ fit_sgs_cv(
 
 \item{tol}{Convergence threshold for the stopping criteria.}
 
-\item{min_frac}{The minimum proportion of the maximum penalty parameter (\eqn{lambda_\text{max}}).}
+\item{min_frac}{Defines the termination point of the pathwise solution, so that \eqn{\lambda_\text{min} = min_frac \cdot \lambda_\text{max}}.}
 
-\item{k}{The number of folds to use in the cross-validation.}
+\item{standardise}{Type of standardisation.
+\itemize{
+\item \code{l2} standardises the input data to have \eqn{\ell_2} norms of one.
+\item \code{l1} standardises the input data to have \eqn{\ell_1} norms of one.
+\item \code{sd} standardises the input data to have standard deviation of one.
+\item \code{none} no standardisation applied.
+}}
 
-\item{standardise}{Logical flag for standardising input data.}
+\item{intercept}{Logical flag for whether to fit an intercept.}
 
-\item{lambda}{Defines the degree of sparsity in the model, as in the lasso.}
+\item{verbose}{Logical flag for whether to print fitting information.}
+
+\item{v_weights}{Optional vector for the variable penalty weights. Overrides the penalties from pen_method if specified.}
+
+\item{w_weights}{Optional vector for the group penalty weights. Overrides the penalties from pen_method if specified.}
+
+\item{error_criteria}{The criteria used to discriminate between models along the path. Supported values are: "mse" (mean squared error) and "mae" (mean absolute error).}
+
+\item{max_lambda}{Optional parameter, which is the value of \eqn{\lambda_\text{max}}, which is used to fit the first model on the path. If not specificed, it is chosen to give the null model.}
 }
 \value{
-A list containing:\tabular{ll}{
-\code{beta} \tab The estimated coefficients \cr
-\tab \cr
-\code{selected_var} \tab Indices of non-zero \code{beta} values. \cr
-\tab \cr
-\code{selected_group} \tab Indices of non-zero groups. \cr
-\tab \cr
-\code{success} \tab Logical flag indicating whether ATOS converged, according to \code{tol}. \cr
-\tab \cr
-\code{num_it} \tab Number of iterations performed. If convergence is not reached, this will be \code{max_iter}. \cr
-\tab \cr
-}
+A list containing:
+item{all_models}{A list of all the models fitted along the path.}
+item{fit}{The 1se chosen model, which is a \code{"sgs"} object type.}
+item{best_lambda}{The value of \eqn{\lambda} which generated the chosen model.}
+item{best_lambda_id}{The path index for the chosen model.}
+item{errors}{A table containing fitting information about the models on the path.}
+item{type}{Indicates which type of regression was performed.}
 }
 \description{
-Fit a sparse-group SLOPE model using k-fold cross-validation.
+Function to fit a pathwise solution of SGS models using k-fold cross-validation.
 }
 \details{
-Function performs fitting of the sparse-group SLOPE model using cross-validation. The model is fitted using Adaptive Three Operator Splitting (ATOS).
-Using CV, we can fit the model along a path and compare the various models generated along this path using the mean-squared error.
+Fits SGS models under a pathwise solution using ATOS, picking the 1se model as optimum. An example fit is given. Warm starts are implemented.
 }
 \examples{
-# specify 6 groups of sizes 2, 3, and 4
-group <- c(1, 1, 2, 2, 2, 3, 3, 3, 3,
-           4, 4, 5, 5, 5, 6, 6, 6, 6)
-# set the weight for each group to the square root of the group's size
-wt <- rep(c(sqrt(2), sqrt(3), sqrt(4)), 2)
-names(wt) <- 1:6
-# compute different lambda sequences
-lambda.max <- lambdaGroupSLOPE(method="max", fdr=0.1, group=group, wt=wt)
-lambda.mean <- lambdaGroupSLOPE(method="mean", fdr=0.1, group=group, wt=wt)
-lambda.corrected <- lambdaGroupSLOPE(method="corrected", fdr=0.1,
-                                     group=group, wt=wt, n.obs=1000)
-rbind(lambda.max, lambda.mean, lambda.corrected)
-#                      [,1]     [,2]     [,3]     [,4]     [,5]     [,6]
-# lambda.max       2.023449 1.844234 1.730818 1.645615 1.576359 1.517427
-# lambda.mean      1.880540 1.723559 1.626517 1.554561 1.496603 1.447609
-# lambda.corrected 1.880540 1.729811 1.637290 1.568971 1.514028 1.467551
-
+# specify a grouping structure
+groups = c(rep(1:20, each=3),
+          rep(21:40, each=4),
+          rep(41:60, each=5),
+          rep(61:80, each=6),
+          rep(81:100, each=7))
+# generate data
+data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+# run SGS with cross-validation (the proximal functions can be found in utils.R)
+cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
 }
 \references{
-F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
 }

@@ -2,19 +2,23 @@
 % Please edit documentation in R/toy_data_gen.R
 \name{generate_toy_data}
 \alias{generate_toy_data}
-\title{Generate toy data}
+\title{generate toy data}
 \usage{
 generate_toy_data(
   p,
   n,
-  rho,
-  seed_id,
-  grouped,
+  rho = 0,
+  seed_id = 2,
+  grouped = TRUE,
   groups,
   noise_level = 1,
   group_sparsity = 0.1,
   var_sparsity = 0.5,
-  signal_strength = sqrt(10)
+  orthogonal = FALSE,
+  data_mean = 0,
+  data_sd = 1,
+  signal_mean = 0,
+  signal_sd = sqrt(10)
 )
 }
 \arguments{
@@ -28,52 +32,47 @@ generate_toy_data(
 
 \item{grouped}{A logical flag indicating whether grouped data is required.}
 
-\item{groups}{If \code{grouped=TRUE}, the grouping structure is required. Each input variable should have a group id.}
+\item{groups}{If item{grouped=TRUE}, the grouping structure is required. Each input variable should have a group id.}
 
 \item{noise_level}{Defines the level of noise (\eqn{sigma}) to be used in generating the response vector \eqn{y}.}
 
 \item{group_sparsity}{Defines the level of group sparsity. Must be in the range \eqn{[0,1]}.}
 
-\item{var_sparsity}{Defines the level of variable sparsity. Must be in the range \eqn{[0,1]}. If \code{grouped=TRUE}, this defines the level of sparsity within each group, not globally.}
+\item{var_sparsity}{Defines the level of variable sparsity. Must be in the range \eqn{[0,1]}. If item{grouped=TRUE}, this defines the level of sparsity within each group, not globally.}
 
-\item{signal_strength}{Defines strength of the signal (\eqn{beta}).}
+\item{orthogonal}{Logical flag as to whether the input matrix should be orthogonal.}
+
+\item{data_mean}{Defines the mean of input predictors.}
+
+\item{data_sd}{Defines the standard deviation of the signal (\eqn{beta}).}
+
+\item{signal_mean}{Defines the mean of the signal (\eqn{beta}).}
+
+\item{signal_sd}{Defines the standard deviation of the signal (\eqn{beta}).}
 }
 \value{
-A list containing:\tabular{ll}{
-\code{y} \tab The response vector. \cr
-\tab \cr
-\code{X} \tab The input matrix. \cr
-\tab \cr
-\code{true_beta} \tab The true values of \eqn{beta} used to generate the response. \cr
-\tab \cr
-\code{true_grp_id} \tab Indices of which groups are non-zero in \code{true_beta}. \cr
-\tab \cr
-}
+A list containing:
+item{y}{The response vector.}
+item{X}{The input matrix.}
+item{true_beta}{The true values of \eqn{beta} used to generate the response.}
+item{true_grp_id}{Indices of which groups are non-zero in item{true_beta}.}
 }
 \description{
-Generates sparse toy data to be used with the \code{\link{fit_sgs}} function.
+Generates sparse toy data.
 The data is generated under a linear model. The generated data can be grouped and sparsity can be provided at both a group and/or variable level.
 }
 \details{
 Generates different types of datasets, which can then be fitted using sparse-group SLOPE.
 }
 \examples{
-# specify 6 groups of sizes 2, 3, and 4
-group <- c(1, 1, 2, 2, 2, 3, 3, 3, 3,
-           4, 4, 5, 5, 5, 6, 6, 6, 6)
-# set the weight for each group to the square root of the group's size
-wt <- rep(c(sqrt(2), sqrt(3), sqrt(4)), 2)
-names(wt) <- 1:6
-# compute different lambda sequences
-lambda.max <- lambdaGroupSLOPE(method="max", fdr=0.1, group=group, wt=wt) 
-lambda.mean <- lambdaGroupSLOPE(method="mean", fdr=0.1, group=group, wt=wt) 
-lambda.corrected <- lambdaGroupSLOPE(method="corrected", fdr=0.1,
-                                     group=group, wt=wt, n.obs=1000)
-rbind(lambda.max, lambda.mean, lambda.corrected)
-#                      [,1]     [,2]     [,3]     [,4]     [,5]     [,6]
-# lambda.max       2.023449 1.844234 1.730818 1.645615 1.576359 1.517427
-# lambda.mean      1.880540 1.723559 1.626517 1.554561 1.496603 1.447609
-# lambda.corrected 1.880540 1.729811 1.637290 1.568971 1.514028 1.467551
+# specify a grouping structure
+groups = c(rep(1:20, each=3),
+          rep(21:40, each=4),
+          rep(41:60, each=5),
+          rep(61:80, each=6),
+          rep(81:100, each=7))
+# generate data
+data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
 
 }
 \references{

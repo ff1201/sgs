@@ -1,7 +1,7 @@
 ###############################################################################
 #
 #    sgs: Sparse-group SLOPE (Sparse-group Sorted L1 Penalized Estimation)
-#    Copyright (C) 2022 Fabio Feser
+#    Copyright (C) 2023 Fabio Feser
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -28,12 +28,11 @@ library(grpSLOPE)
 library(MASS)
 library(VGAM)
 #library(RColorBrewer)
-#library(caret)
-#library(Rlab)
+library(caret)
+library(Rlab)
 library(faux)
 library(glmnet)
 #library(pracma)
-library(simcausal)
 
 ###################################################
 #                 General functions
@@ -201,7 +200,6 @@ proxGroupSortedL1 <- function(y, lambda,group, group_id, ...) {
 }
 
 sgs_convex_opt = function(X,y,beta,groups,num_obs,gslope_seq,slope_seq,intercept=TRUE){  
-
   # function to evaluation convex optimisation function
   beta_org = beta
   if (intercept==TRUE){beta = beta[-1]}
@@ -246,9 +244,7 @@ fdr_sensitivity = function(fitted_ids, true_ids,num_coef){
 }
 
 plot_path <- function(beta_matrix, lambdas, how_many,main){
-
   # Plots the fitted beta values along a lambda path
-
   beta_order = order(abs(beta_matrix[,dim(beta_matrix)[2]]),decreasing=TRUE)
   max_y = max(beta_matrix)/0.99
   min_y = min(beta_matrix)/0.99
@@ -261,9 +257,7 @@ plot_path <- function(beta_matrix, lambdas, how_many,main){
 }
 
 generate_lambda_path <- function(X,y,groups,alpha,min_frac,nlambda, v_weights, w_weights,group.sizes){
-  
   wts = sort(sqrt(group.sizes),decreasing=TRUE)
-
   w_weights_expanded = rep(0,length(v_weights))
   group_count = 0
   counter_temp = 1
@@ -427,7 +421,7 @@ standardise_sgs <- function(X,y,standardise, intercept,num_obs,type="linear"){
     X = sapply(1:dim(X)[2], function(i) X[,i]/X_scale[i])
     standardisation_occured = 1
     scale_pen = 1/num_obs
-  } # "none" 
+  } else { standardisation_occured = 0 }# "none" 
   if (intercept) { # center y and X 
     if (type == "linear"){
     y_mean = mean(y)
@@ -447,29 +441,7 @@ out$scale_pen = scale_pen
 return(out)
 }
 
-generate_penalties <- function(gFDR, vFDR, pen_method,num_groups,wt_per_grp, len_each_grp, num_vars,alpha){
-  if (pen_method == 1){ # SGS variable mean
-    pen_gslope_org = lambdaChiOrtho(fdr=gFDR, n.group=num_groups, wt=wt_per_grp,
-                           group.sizes=len_each_grp, method="mean")
-    if (alpha==0){pen_slope_org = rep(0,num_vars)}else{
-    pen_slope_org = sgs_var_penalty(q=vFDR, pen_g=pen_gslope_org,p=num_vars,lambda=1,alpha=alpha,m=num_groups,group.sizes=len_each_grp,method="mean")}
-  } else if (pen_method == 2){ # SGS variable max
-    pen_gslope_org = lambdaChiOrtho(fdr=gFDR, n.group=num_groups, wt=wt_per_grp,
-                           group.sizes=len_each_grp, method="mean")
-    pen_slope_org = sgs_var_penalty(q=vFDR, pen_g=pen_gslope_org,p=num_vars,lambda=1,alpha=alpha,m=num_groups,group.sizes=len_each_grp,method="max")
-  } else if (pen_method == 3){ # SGS original
-    pen_gslope_org = lambdaChiOrtho(fdr=gFDR, n.group=num_groups, wt=wt_per_grp,
-                           group.sizes=len_each_grp, method="mean")
-    pen_slope_org = BH_sequence(q=vFDR,p=num_vars)
-  } else {stop("method choice not valid")}
-out=c()
-out$pen_slope_org = pen_slope_org
-out$pen_gslope_org = pen_gslope_org
-return(out)
-}
-
-
-# Compute the usual unbiased estimate of the variance in a linear model.
+# Compute the usual unbiased estimate of the variance in a linear model. From SLOPE package
 estimateNoise <- function(X, y, intercept = TRUE) {
   n <- NROW(X)
   p <- NCOL(X)
@@ -479,41 +451,6 @@ estimateNoise <- function(X, y, intercept = TRUE) {
   fit <- stats::lm.fit(X, y)
   sqrt(sum(fit$residuals^2) / (n - p + intercept))
 }
-
-estimate_noise_sgs <- function(X,y,groups,intercept,pen_method,alpha,vFDR,gFDR,standardise){
-  # Run Algorithm 5 of Section 3.2.3. (Bogdan et al.) for SGS
-      if (intercept) {
-        selected <- 1
-        X_2 = cbind(1,X)
-        y_1 = y-mean(y)
-      } else {
-        selected <- integer(0)
-      }
-
-      out=standardise_sgs(X=X,y=y,standardise,intercept,dim(X)[1])
-
-      repeat {
-        selected_prev <- selected
-
-        noise_est <- estimateNoise(X_2[, selected], y_1, intercept)
-        
-        fit <- fit_sgs(X=X, y=y, groups=groups, pen_method=pen_method, type="linear", lambda=noise_est*out$scale_pen, alpha=alpha, vFDR=vFDR, gFDR=gFDR,intercept=intercept)
-        
-        selected <- fit$selected_var
-        if (intercept) {
-          selected <- union(1, selected)
-        }
-
-        if (identical(selected, selected_prev)) {
-          break
-        }
-
-        if (length(selected) + 1 >= n) {
-          stop("selected >= n-1 variables; cannot estimate variance")
-        }
-    }  
-return(fit)
-} 
 
 which_groups <- function(beta, groups){
 # outputs the non-zero group ids and effects from beta values
@@ -530,3 +467,41 @@ which_groups <- function(beta, groups){
   rownames(group.effects) = paste0("G", 1:num_groups)
   return(list(selected_group,group.effects))
 }
+
+generate_penalties_2 <- function(gFDR, vFDR, pen_method,num_groups,wt_per_grp, len_each_grp, num_vars,alpha,lambda){
+  if (pen_method == 1){ # SGS variable mean
+    pen_slope_org = BH_sequence(q=vFDR,p=num_vars)
+    pen_gslope_org = grp_pen_v1(q=gFDR,pen_v=pen_slope_org,repeats=1e5,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp)
+    pen_slope_org = sgs_var_penalty(q=vFDR, pen_g=pen_gslope_org,p=num_vars,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp,method="max")
+  } else if (pen_method == 2){ # SGS variable max
+    pen_slope_org = BH_sequence(q=vFDR,p=num_vars)
+    pen_gslope_org = grp_pen_adjust(q=gFDR,pen_v=pen_slope_org,repeats=1e5,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp)[[1]]
+    pen_slope_org = sgs_var_penalty(q=vFDR, pen_g=pen_gslope_org,p=num_vars,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp,method="mean")
+  } else {stop("method choice not valid")}
+out=c()
+out$pen_slope_org = pen_slope_org
+out$pen_gslope_org = pen_gslope_org
+return(out)
+}
+
+grp_pen_v1 <- function(q, pen_v,repeats,lambda,alpha,m,group.sizes) {
+lambda.max <- rep(0, m)
+lambda.min <- rep(0, m)
+num_repeats = repeats/length(group.sizes)
+z = c()
+for (j in 1:num_repeats){
+for (i in 1:length(group.sizes)){
+    z =append(z,sum(abs(rnorm(group.sizes[i]))))
+}
+}
+num_vars = length(pen_v)
+for (i in 1:m){ 
+      p_sequence = rep(0,m)
+      quantile_v = quantile(z,1-(i*q)/(m))
+      for (j in 1:m){
+        p_sequence[j] = (quantile_v - alpha*lambda*sum(pen_v[(num_vars - group.sizes[j] + 1):num_vars]))/((1-alpha)*lambda*group.sizes[j])   # pick last few penalties 
+    }
+    lambda.max[i] <- max(0,max(p_sequence))
+}
+  return(lambda.max)
+} 

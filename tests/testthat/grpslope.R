@@ -7,12 +7,12 @@ test_that("solution reduces to grpslope when alpha=0 for uneven groups with no s
            rep(17:22,each=6))
   num_groups = length(unique(groups))
 
-  data = generate_toy_data(p=100,n=50,rho = 0,seed_id = 10,grouped = TRUE,group_sparsity=0.1,groups = groups,var_sparsity=1,orthogonal = FALSE)
+  data = generate_toy_data(p=100,n=50,rho = 0,seed_id = 3,grouped = TRUE,group_sparsity=0.1,groups = groups,var_sparsity=1,orthogonal = FALSE)
   X = data$X
   y = data$y
   n = dim(X)[1]
   lambda=1.5
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda/n, alpha=0, FDR=0.1, gFDR=0.1,standardise="none", intercept=FALSE) # lambda is scaled as grpSLOPE doesn't use 1/n factor
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda/n, alpha=0, vFDR=0.1, gFDR=0.1,standardise="none", intercept=FALSE) # lambda is scaled as grpSLOPE doesn't use 1/n factor
    
   grpslope = grpSLOPE(X=X, y=y, group = groups, fdr=0.1, lambda ="mean", max.iter=5000, normalize=FALSE,orthogonalize=FALSE,sigma=lambda)
 
@@ -27,18 +27,17 @@ test_that("solution reduces to grpslope when alpha=0 for uneven groups with no s
   expect_equivalent(grpslope_cost,sgs_cost,tol=1e-3)
 })
 
-
 test_that("solution reduces to grpslope when alpha=0 for even groups with no standardisation or intercept", {
   options(warn=-1) # to surpress warning about using grpSLOPE package for alpha = 0
   groups = rep(1:20,each=5)
   num_groups = length(unique(groups))
 
-  data = generate_toy_data(p=100,n=50,rho = 0,seed_id = 10,grouped = TRUE,group_sparsity=0.1,groups = groups,var_sparsity=1,orthogonal = FALSE)
+  data = generate_toy_data(p=100,n=50,rho = 0,seed_id = 3,grouped = TRUE,group_sparsity=0.1,groups = groups,var_sparsity=1,orthogonal = FALSE)
   X = data$X
   y = data$y
   n = dim(X)[1]
   lambda=1.5
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda/n, alpha=0, FDR=0.1, gFDR=0.1,intercept=FALSE,max_iter=10000,standardise="none") # lambda is scaled as grpSLOPE doesn't use 1/n factor
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda/n, alpha=0, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none") # lambda is scaled as grpSLOPE doesn't use 1/n factor
    
   grpslope = grpSLOPE(X=X, y=y, group = groups, fdr=0.1, lambda = "mean", max.iter=5000, normalize=FALSE,orthogonalize=FALSE,sigma=lambda)
 
@@ -61,7 +60,7 @@ test_that("solution reduces to grpslope when alpha=0 for uneven groups with inte
            rep(17:22,each=6))
   num_groups = length(unique(groups))
 
-  data = generate_toy_data(p=100,n=50,rho = 0,seed_id = 10,grouped = TRUE,group_sparsity=0.1,groups = groups,var_sparsity=1,orthogonal = FALSE)
+  data = generate_toy_data(p=100,n=50,rho = 0,seed_id = 3,grouped = TRUE,group_sparsity=0.1,groups = groups,var_sparsity=1,orthogonal = FALSE)
   X = data$X
   # grpslope implements the intercept differently, so centering y and X as this is done in sgs when intercept=TRUE
   X_center = apply(X,2,mean)
@@ -70,9 +69,8 @@ test_that("solution reduces to grpslope when alpha=0 for uneven groups with inte
   y = data$y
   n = dim(X)[1]
   lambda=1.5
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda/n, alpha=0, FDR=0.1, gFDR=0.1,intercept=TRUE,max_iter=10000,standardise="none") # lambda is scaled as grpSLOPE doesn't use 1/n factor
-   
-  grpslope = grpSLOPE(X=X, y=y, group = groups, fdr=0.1, lambda = lambda*BH_sequence(q=0.1,p=num_groups), max.iter=5000, normalize=FALSE,orthogonalize=FALSE,sigma=1)
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda/n, alpha=0, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="none") # lambda is scaled as grpSLOPE doesn't use 1/n factor
+  grpslope = grpSLOPE(X=X, y=y, group = groups, fdr=0.1, lambda ="mean", max.iter=5000, normalize=FALSE,orthogonalize=FALSE,sigma=lambda)
 
   expect_equivalent(grpslope$beta,
     as.matrix(sgs$beta)[-1],
@@ -86,7 +84,7 @@ test_that("solution reduces to grpslope when alpha=0 for even groups with interc
   groups = rep(1:20,each=5)
   num_groups = length(unique(groups))
 
-  data = generate_toy_data(p=100,n=50,rho = 0,seed_id = 10,grouped = TRUE,group_sparsity=0.1,groups = groups,var_sparsity=1,orthogonal = FALSE)
+  data = generate_toy_data(p=100,n=50,rho = 0,seed_id = 3,grouped = TRUE,group_sparsity=0.1,groups = groups,var_sparsity=1,orthogonal = FALSE)
   X = data$X
   # grpslope implements the intercept differently, so centering y and X as this is done in sgs when intercept=TRUE
   X_center = apply(X,2,mean)
@@ -95,9 +93,8 @@ test_that("solution reduces to grpslope when alpha=0 for even groups with interc
   y = data$y
   n = dim(X)[1]
   lambda=1.5
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda/n, alpha=0, FDR=0.1, gFDR=0.1,intercept=TRUE,max_iter=10000,standardise="none") # lambda is scaled as grpSLOPE doesn't use 1/n factor
-   
-  grpslope = grpSLOPE(X=X, y=y, group = groups, fdr=0.1, lambda = lambda*BH_sequence(q=0.1,p=num_groups), max.iter=5000, normalize=FALSE,orthogonalize=FALSE,sigma=1)
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda/n, alpha=0, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="none") # lambda is scaled as grpSLOPE doesn't use 1/n factor
+  grpslope = grpSLOPE(X=X, y=y, group = groups, fdr=0.1, lambda ="mean", max.iter=5000, normalize=FALSE,orthogonalize=FALSE,sigma=lambda)
 
   expect_equivalent(grpslope$beta,
     as.matrix(sgs$beta)[-1],
@@ -105,3 +102,4 @@ test_that("solution reduces to grpslope when alpha=0 for even groups with interc
   )
 
 })
+

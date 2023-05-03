@@ -1,8 +1,86 @@
-source("fit_sgs.R")
+###############################################################################
+#
+#    sgs: Sparse-group SLOPE (Sparse-group Sorted L1 Penalized Estimation)
+#    Copyright (C) 2023 Fabio Feser
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+###############################################################################
+
+#' fit an SGS model using CV
+#'
+#' Function to fit a pathwise solution of SGS models using k-fold cross-validation.
+#'
+#' Fits SGS models under a pathwise solution using ATOS, picking the 1se model as optimum. An example fit is given. Warm starts are implemented.
+#'
+#' @param X Input matrix of dimensions \eqn{p \times n}.
+#' @param y Output vector of dimension \eqn{n}.
+#' @param groups A grouping structure for the input data. Should take the form of a vector of group indices.
+#' @param pen_method The type of penalty sequences to use.
+#'   - `1` uses the vMean SGS and gMean gSLOPE sequences. 
+#'   - `2` uses the vMax SGS and gMean gSLOPE sequences.
+#'   - `3` uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
+#' @param type The type of regression to perform. Supported values are: "linear" and "logistic".
+#' @param nlambda The number of pathwise \eqn{\lambda} values to fit.
+#' @param nfolds The number of folds to use in cross-validation.
+#' @param alpha The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE.
+#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties.
+#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties.
+#' @param max_iter Maximum number of ATOS iterations to perform. 
+#' @param backtracking The backtracking parameter, as defined in Pedregosa et. al. (2018) as \eqn{\tau}.
+#' @param max_iter_backtracking Maximum number of backtracking line search iterations to perform per global iteration.
+#' @param tol Convergence threshold for the stopping criteria.
+#' @param min_frac Defines the termination point of the pathwise solution, so that \eqn{\lambda_\text{min} = min_frac \cdot \lambda_\text{max}}.
+#' @param standardise Type of standardisation. 
+#'   - `l2` standardises the input data to have \eqn{\ell_2} norms of one. Internally, \eqn{\lambda} is scaled by \eqn{1/\sqrt{n}}.
+#'   - `l1` standardises the input data to have \eqn{\ell_1} norms of one. Internally, \eqn{\lambda} is scaled by \eqn{1/n}.
+#'   - `sd` standardises the input data to have standard deviation of one.
+#'   - `none` no standardisation applied.
+#' @param intercept Logical flag for whether to fit an intercept.
+#' @param verbose Logical flag for whether to print fitting information.
+#' @param v_weights Optional vector for the variable penalty weights. Overrides the penalties from pen_method if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}
+#' @param w_weights Optional vector for the group penalty weights. Overrides the penalties from pen_method if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}
+#' @param error_criteria The criteria used to discriminate between models along the path. Supported values are: "mse" (mean squared error) and "mae" (mean absolute error).
+#' @param max_lambda Optional parameter, which is the value of \eqn{\lambda_\text{max}}, which is used to fit the first model on the path. If not specificed, it is chosen to give the null model. 
+#'
+#' @return A list containing:
+#' item{all_models}{A list of all the models fitted along the path.}
+#' item{fit}{The 1se chosen model, which is a `"sgs"` object type.}
+#' item{best_lambda}{The value of \eqn{\lambda} which generated the chosen model.}
+#' item{best_lambda_id}{The path index for the chosen model.}
+#' item{errors}{A table containing fitting information about the models on the path.}
+#' item{type}{Indicates which type of regression was performed.}
+#'
+#' @examples
+#' # specify a grouping structure
+#' groups = c(rep(1:20, each=3),
+#'           rep(21:40, each=4),
+#'           rep(41:60, each=5),
+#'           rep(61:80, each=6),
+#'           rep(81:100, each=7))
+#' # generate data
+#' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+#' # run SGS with cross-validation (the proximal functions can be found in utils.R)
+#' cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
+#' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+#' @export
+
+#source("fit_sgs.R")
 
 fit_sgs_cv = function(X,y,groups,pen_method=1, type = "linear", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, backtracking = 0.7, max_iter = 5000, max_iter_backtracking = 100, tol = 1e-5, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=FALSE, v_weights=NULL,w_weights=NULL,error_criteria = "mse",max_lambda = NULL){
   # generate lambdas
-  p = ncol(X)
+  num_vars = ncol(X)
   num_obs = nrow(X)
   num_groups = length(unique(groups))
   group_ids = getGroupID(groups) 
@@ -11,7 +89,7 @@ fit_sgs_cv = function(X,y,groups,pen_method=1, type = "linear", nlambda = 20, nf
   
   # weights
   if (is.null(v_weights) & is.null(w_weights)){
-    pens_out = generate_penalties(gFDR, vFDR, pen_method,num_groups,wt_per_grp, len_each_grp, p,alpha)
+    pens_out = generate_penalties(gFDR, vFDR, pen_method, groups, alpha)
     pen_slope_org = pens_out$pen_slope_org
     pen_gslope_org = pens_out$pen_gslope_org
   } else {
@@ -39,8 +117,8 @@ fit_sgs_cv = function(X,y,groups,pen_method=1, type = "linear", nlambda = 20, nf
   all_errors = matrix(0,nrow=nlambda,ncol=nfolds)
   output_errors = data.frame(lambda=lambdas,error_criteria=rep(0,nlambda), num_non_zero = rep(0,nlambda))
   ## warm starts
-  initial_x = rep(0,p)
-  initial_u = rep(0,p)
+  initial_x = rep(0,num_vars)
+  initial_u = rep(0,num_vars)
 
   list_of_models = list()
   
@@ -105,17 +183,12 @@ fit_sgs_cv = function(X,y,groups,pen_method=1, type = "linear", nlambda = 20, nf
  
   model = list_of_models[[match(best_lambda, lambdas)]]
   out = c()
-  out$all_models =list_of_models
+  out$all_models = list_of_models
   out$fit = model
   out$best_lambda = best_lambda
   out$best_lambda_id = match(best_lambda, lambdas)
   out$errors = output_errors
   out$type = type
-  class(out) <- "SGS_CV"
+  class(out) <- "sgs_cv"
   return(out)
-}
-
-print.SGS_CV = function(out, digits = max(3, getOption("digits") - 3), ...){ # fix this
-  cat("\n regression type: ", out$type, "\n\n")
-  print(cbind(lambda = out$errors$lambda, error = out$errors$error_criteria, estimated_non_zero = out$errors$num_non_zero))
 }

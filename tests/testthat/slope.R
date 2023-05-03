@@ -2,7 +2,7 @@ test_that("solution reduces to slope when alpha=1, with no intercept or standard
   options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 5,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
@@ -27,7 +27,7 @@ test_that("solution reduces to slope when alpha=1, with intercept but no standar
   options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 5,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
@@ -52,7 +52,7 @@ test_that("solution reduces to slope when alpha=1, with no intercept but sd stan
   options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 5,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
@@ -77,7 +77,7 @@ test_that("solution reduces to slope when alpha=1, with no intercept but l1 stan
   options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 5,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
@@ -102,7 +102,7 @@ test_that("solution reduces to slope when alpha=1, with no intercept but l2 stan
   options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 5,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
@@ -127,7 +127,7 @@ test_that("solution reduces to slope when alpha=1, with intercept and sd standar
   options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 5,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
@@ -152,7 +152,7 @@ test_that("solution reduces to slope when alpha=1, with intercept and l1 standar
   options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 5,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
@@ -177,7 +177,7 @@ test_that("solution reduces to slope when alpha=1, with intercept and l2 standar
   options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 5,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8

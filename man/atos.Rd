@@ -2,12 +2,12 @@
 % Please edit documentation in R/atos.R
 \name{atos}
 \alias{atos}
-\title{Adaptive three operator splitting (ATOS)}
+\title{adaptive three operator splitting (ATOS)}
 \usage{
 atos(
   X,
   y,
-  loss,
+  type = "linear",
   prox_1,
   prox_2,
   pen_prox_1 = 0.5,
@@ -18,8 +18,11 @@ atos(
   tol = 1e-05,
   prox_1_opts = NULL,
   prox_2_opts = NULL,
-  group_ids,
-  standardise = FALSE
+  standardise = "l2",
+  intercept = TRUE,
+  x0 = NULL,
+  u = NULL,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -27,7 +30,7 @@ atos(
 
 \item{y}{Output vector of dimension \eqn{n}.}
 
-\item{loss}{The loss function to use (\eqn{f(x)}). Supported values are: "mse".}
+\item{type}{The type of regression to perform. Supported values are: "linear" and "logistic".}
 
 \item{prox_1}{The proximal operator for the first function (\eqn{h(x)}).}
 
@@ -35,7 +38,9 @@ atos(
 
 \item{pen_prox_1}{The penalty for the first proximal operator. For the lasso, this would be \eqn{\lambda}. If operator does not include a penalty, set to 1.}
 
-\item{pen_prox_2}{The penalty for the second proximal operator. For the lasso, this would be \eqn{\lambda}. If operator does not include a penalty, set to 1.}
+\item{pen_prox_2}{The penalty for the second proximal operator.}
+
+\item{max_iter}{Maximum number of ATOS iterations to perform.}
 
 \item{backtracking}{The backtracking parameter, as defined in Pedregosa et. al. (2018) as \eqn{\tau}.}
 
@@ -43,50 +48,60 @@ atos(
 
 \item{tol}{Convergence threshold for the stopping criteria.}
 
-\item{prox_1_opts}{Optional arguments for first proximal operator. For the group lasso, this would be a vector of group IDs.}
+\item{prox_1_opts}{Optional arguments for first proximal operator. For the group lasso, this would be a vector of group IDs. Note: this must be inserted as a list.}
 
-\item{prox_2_opts}{Optional arguments for second proximal operator. For the group lasso, this would be a vector of group IDs.#' @param max_iter Maximum number of ATOS iterations to perform.}
+\item{prox_2_opts}{Optional arguments for second proximal operator.}
 
-\item{standardise}{Logical flag for standardising input data.}
+\item{standardise}{Type of standardisation.
+\itemize{
+\item \code{l2} standardises the input data to have \eqn{\ell_2} norms of one.
+\item \code{l1} standardises the input data to have \eqn{\ell_1} norms of one.
+\item \code{sd} standardises the input data to have standard deviation of one.
+\item \code{none} no standardisation applied.
+}}
+
+\item{intercept}{Logical flag for whether to fit an intercept.}
+
+\item{x0}{Optional initial vector for x_0.}
+
+\item{u}{Optional initial vector for u.}
+
+\item{verbose}{Logical flag for whether to print fitting information.}
 }
 \value{
-A list containing:\tabular{ll}{
-\code{x} \tab The solution to the OPT (See Pedregosa et. al. (2018)) \cr
-\tab \cr
-\code{u} \tab The solution to the dual problem (See Pedregosa et. al. (2018)) \cr
-\tab \cr
-\code{success} \tab Logical flag indicating whether ATOS converged, according to \code{tol}. \cr
-\tab \cr
-\code{num_it} \tab Number of iterations performed. If convergence is not reached, this will be \code{max_iter}. \cr
-\tab \cr
-}
+A list containing:
+item{beta}{The fitted values from the regression.}
+item{x}{The solution to the OPT (See Pedregosa et. al. (2018))}
+item{u}{The solution to the dual problem (See Pedregosa et. al. (2018))}
+item{z}{The updated values from applying the first proximal operator. (See Pedregosa et. al. (2018))}
+item{success}{Logical flag indicating whether ATOS converged, according to item{tol}.}
+item{num_it}{Number of iterations performed. If convergence is not reached, this will be item{max_iter}.}
+item{certificate}{Final value of convergence criteria.}
+item{intercept}{Logical flag indicating whether an intercept was fit.}
 }
 \description{
-General function to perform ATOS with penalties other than SGS.
+Function for fitting ATOS with general convex penalties. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
 }
 \details{
-Performs ATOS for other penalties. An example for the sparse-group lasso (SGL) is given.
+\code{ATOS()} solves convex minimization problems of the form
+\deqn{
+  \min_{x \in \mathbb{R}^p} f(x) + g(x) + h(x),
+}
+where \eqn{f} is convex and differentiable with \eqn{L_f}-Lipschitz gradient, and \eqn{g} and \eqn{h} are both convex.
 The algorithm is not symmetrical, but usually the difference between variations are only small numerical values, which are filtered out.
-However, both variations should be checked regardless.
+However, both variations should be checked regardless. An example for the sparse-group lasso (SGL) is given.
 }
 \examples{
-# specify 6 groups of sizes 2, 3, and 4
-group <- c(1, 1, 2, 2, 2, 3, 3, 3, 3,
-           4, 4, 5, 5, 5, 6, 6, 6, 6)
-# set the weight for each group to the square root of the group's size
-wt <- rep(c(sqrt(2), sqrt(3), sqrt(4)), 2)
-names(wt) <- 1:6
-# compute different lambda sequences
-lambda.max <- lambdaGroupSLOPE(method="max", fdr=0.1, group=group, wt=wt) 
-lambda.mean <- lambdaGroupSLOPE(method="mean", fdr=0.1, group=group, wt=wt) 
-lambda.corrected <- lambdaGroupSLOPE(method="corrected", fdr=0.1,
-                                     group=group, wt=wt, n.obs=1000)
-rbind(lambda.max, lambda.mean, lambda.corrected)
-#                      [,1]     [,2]     [,3]     [,4]     [,5]     [,6]
-# lambda.max       2.023449 1.844234 1.730818 1.645615 1.576359 1.517427
-# lambda.mean      1.880540 1.723559 1.626517 1.554561 1.496603 1.447609
-# lambda.corrected 1.880540 1.729811 1.637290 1.568971 1.514028 1.467551
-
+# specify a grouping structure
+groups = c(rep(1:20, each=3),
+          rep(21:40, each=4),
+          rep(41:60, each=5),
+          rep(61:80, each=6),
+          rep(81:100, each=7))
+# generate data
+data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+# run atos (the proximal functions can be found in utils.R)
+out = atos(X=data$X, y=data$y, type="linear", prox_1 = L1_prox, prox_2 = group_L1_prox, standardise="none", intercept=FALSE, prox_2_opts = list(groups))
 }
 \references{
 F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}

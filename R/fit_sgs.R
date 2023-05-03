@@ -1,8 +1,88 @@
-source("utils.R")
-#source("toy_data_gen.R")
+###############################################################################
+#
+#    sgs: Sparse-group SLOPE (Sparse-group Sorted L1 Penalized Estimation)
+#    Copyright (C) 2023 Fabio Feser
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+###############################################################################
+
+#' fit an SGS model
+#' 
+#' Sparse-group SLOPE (SGS) main fitting function.
+#' 
+#' Fits SGS models using ATOS.
+#'
+#' @param X Input matrix of dimensions \eqn{p \times n}.
+#' @param y Output vector of dimension \eqn{n}.
+#' @param groups A grouping structure for the input data. Should take the form of a vector of group indices.
+#' @param pen_method The type of penalty sequences to use.
+#'   - `1` uses the vMean SGS and gMean gSLOPE sequences. 
+#'   - `2` uses the vMax SGS and gMean gSLOPE sequences.
+#'   - `3` uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
+#' @param type The type of regression to perform. Supported values are: "linear" and "logistic".
+#' @param lambda The value of \eqn{\lambda}, which defines the level of sparsity in the model. Can be picked using cross-validation (see fit_sgs_cv)
+#' @param alpha The value of \eqn{\alpha}, defines the convex balance between SLOPE and gSLOPE.
+#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties.
+#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties.
+#' @param max_iter Maximum number of ATOS iterations to perform. 
+#' @param backtracking The backtracking parameter, as defined in Pedregosa et. al. (2018) as \eqn{\tau}.
+#' @param max_iter_backtracking Maximum number of backtracking line search iterations to perform per global iteration.
+#' @param tol Convergence threshold for the stopping criteria.
+#' @param standardise Type of standardisation. 
+#'   - `l2` standardises the input data to have \eqn{\ell_2} norms of one.
+#'   - `l1` standardises the input data to have \eqn{\ell_1} norms of one.
+#'   - `sd` standardises the input data to have standard deviation of one.
+#'   - `none` no standardisation applied.
+#' @param intercept Logical flag for whether to fit an intercept.
+#' @param v_weights Optional vector for the variable penalty weights. Overrides the penalties from pen_method if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}
+#' @param w_weights Optional vector for the group penalty weights. Overrides the penalties from pen_method if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}
+#' @param x0 Optional initial vector for \eqn{x_0}.
+#' @param u Optional initial vector for \eqn{u}.
+#' @param verbose Logical flag for whether to print fitting information.
+#'
+#' @return A list containing:
+#' item{beta}{The fitted values from the regression.}
+#' item{x}{The solution to the OPT (See Pedregosa et. al. (2018))}
+#' item{u}{The solution to the dual problem (See Pedregosa et. al. (2018))}
+#' item{z}{The updated values from applying the first proximal operator. (See Pedregosa et. al. (2018))}
+#' item{type}{Indicates which type of regression was performed.}
+#' item{pen_slope}{Vector of the variable penalty sequence.}
+#' item{pen_gslope}{Vector of the group penalty sequence.}
+#' item{lambda}{Value of \eqn{\lambda} used to fit the model.}
+#' item{success}{Logical flag indicating whether ATOS converged, according to item{tol}.}
+#' item{num_it}{Number of iterations performed. If convergence is not reached, this will be item{max_iter}.}
+#' item{certificate}{Final value of convergence criteria.}
+#' item{intercept}{Logical flag indicating whether an intercept was fit.}
+#'
+#' @examples
+#' # specify a grouping structure
+#' groups = c(rep(1:20, each=3),
+#'           rep(21:40, each=4),
+#'           rep(41:60, each=5),
+#'           rep(61:80, each=6),
+#'           rep(81:100, each=7))
+#' # generate data
+#' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+#' # run SGS 
+#' model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
+#' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+#' @export
+
+#source("utils.R")
 
 fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0.95, vFDR=0.1, gFDR=0.1, max_iter = 5000, backtracking = 0.7, max_iter_backtracking = 100, tol = 1e-5, standardise = "l2", intercept = TRUE,w_weights=NULL,v_weights=NULL,x0 = NULL, u = NULL,verbose=FALSE){
-  
   # -------------------------------------------------------------
   # checks
   # ------------------------------------------------------------- 
@@ -61,12 +141,8 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
     stop("standardising a matrix that is sparse. this would remove sparsity of X. set standardise to none")
   }
 
-  #if (type == "logistic"){ # change to [-1,1] to aid training
-  #  y = ifelse(y==1,1,-1)
-  #}
-
   # standardise
-  if (standardise=="none"){
+  if (standardise=="none" & intercept==FALSE){
       scale_pen = 1
       y_mean = 0 
       X_center = 0
@@ -79,7 +155,7 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
       y = standardise_out$y
       y_mean = standardise_out$y_mean
       scale_pen = standardise_out$scale_pen
-    }
+  }
 
   # -------------------------------------------------------------
   # set values
@@ -120,7 +196,7 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
 
   # weights
   if (is.null(v_weights) & is.null(w_weights)){
-    pens_out = generate_penalties(gFDR, vFDR, pen_method,num_groups,wt_per_grp, len_each_grp, num_vars,alpha)
+    pens_out = generate_penalties(gFDR, vFDR, pen_method, groups, alpha)
     pen_slope_org = pens_out$pen_slope_org
     pen_gslope_org = pens_out$pen_gslope_org
     pen_slope = alpha*lambda*pen_slope_org
@@ -145,12 +221,6 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   # initial fitting values
   # ------------------------------------------------------------- 
   step_size = 1/init_lipschitz(f=f,f_grad=f_grad, x0=x0, f_opts = f_opts, f_grad_opts = f_grad_opts)
- # rand.mat <- matrix(rnorm(num_vars), c(num_vars, 1))
- # rand.mat <- rand.mat / norm(rand.mat, "f")
- # rand.mat <- t(X) %*% (X %*% rand.mat)
- # L <- (1/num_obs)*norm(rand.mat, "f")*wt[1]*wt[1]
- # step_size = 1/L
-  
   z = proxGroupSortedL1(y=x0*wt, lambda=pen_gslope*step_size,group=groups,group_id=group_ids)
   z = inv_wt*z
   fz = f(y=y, X=X, input = z, num_obs = num_obs)
@@ -268,34 +338,7 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   out$num_it = it
   out$certificate = certificate
   out$intercept = intercept
-  class(out) <- "SGS"
+  class(out) <- "sgs"
   
   return(out)
-}
-
-print.SGS = function(out, digits = max(3, getOption("digits") - 3), ...){ 
-  num.nonzero <- apply(out$beta,2, function(z){sum(z != 0)})
-  cat("\n regression type: ", out$type, "\n\n")
-  print(cbind(lambdas = out$lambdas, num.nonzero = num.nonzero, convergence = out$success))
-}
-
-predict.SGS = function(fit, predict_X, type="linear"){
-  if (type=="linear"){
-    if (fit$intercept){
-    predictions = arma_mm(cbind(1,predict_X),as.vector(fit$beta))
-    } else {
-      predictions = arma_mm(predict_X,as.vector(fit$beta))
-    }
-  } else if (type == "logistic"){
-    predictions = c()
-    if (fit$intercept){
-      predictions$response = sigmoid(arma_mm(cbind(1,predict_X),as.vector(fit$beta)))
-    } else {
-      predictions$response = sigmoid(arma_mm(predict_X,as.vector(fit$beta)))
-    }
-    predictions$class = ifelse(predictions$response>0.5,1,0)
-  } else {
-       stop("not a valid type")
-  }
-  return(predictions)
 }

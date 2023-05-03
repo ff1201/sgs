@@ -7,14 +7,14 @@ test_that("solution reduces to sgl when using constant weights, with uneven grou
            rep(6:11, each=4),
            rep(12:16, each=5), 
            rep(17:22,each=6))
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 20,grouped = TRUE, groups=groups,group_sparsity=0.3,var_sparsity=0.5,orthogonal = FALSE)
+  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = TRUE, groups=groups,group_sparsity=0.3,var_sparsity=0.5,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
   alpha = 0.3
   sgl = seagull(y=y,X=matrix(0,nrow=dim(X)[1],ncol=dim(X)[2]),groups=groups,alpha=alpha,Z=X,max_lambda=lambda,loops_lambda=1,standardize = FALSE)
   
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none",w_weights = rep((1-alpha)*lambda,length(table(groups))),v_weights = rep(alpha*lambda,p))
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=1, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none",w_weights = rep((1-alpha)*lambda,length(table(groups))),v_weights = rep(alpha*lambda,p))
   
   sgl_cost = sgs_convex_opt(X=X,y=y,beta=t(sgl$random_effects),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=FALSE)
   sgs_cost = sgs_convex_opt(X=X,y=y,beta=as.matrix(sgs$beta),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=FALSE)
