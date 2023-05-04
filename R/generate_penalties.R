@@ -54,7 +54,6 @@ generate_penalties <- function(gFDR, vFDR, pen_method, groups, alpha){
   len_each_grp = sapply(group_ids, length)
   wt_per_grp = sqrt(len_each_grp)
   wt_per_grp = wt_per_grp[names(group_ids)]
-  if (is.null(x0)) {x0 = rep(0,num_vars)}
   num_groups = length(unique(groups))
   success = 0 # checks whether convergence happened
   LS_EPS = .Machine$double.eps # R accuracy

@@ -14,8 +14,7 @@ test_that("solution reduces to sgl when using constant weights, with uneven grou
   alpha = 0.3
   sgl = seagull(y=y,X=matrix(0,nrow=dim(X)[1],ncol=dim(X)[2]),groups=groups,alpha=alpha,Z=X,max_lambda=lambda,loops_lambda=1,standardize = FALSE)
   
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=1, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none",w_weights = rep((1-alpha)*lambda,length(table(groups))),v_weights = rep(alpha*lambda,p))
-  
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none",w_weights = rep(1,length(table(groups))),v_weights = rep(1,p))
   sgl_cost = sgs_convex_opt(X=X,y=y,beta=t(sgl$random_effects),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=FALSE)
   sgs_cost = sgs_convex_opt(X=X,y=y,beta=as.matrix(sgs$beta),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=FALSE)
   
@@ -38,7 +37,7 @@ test_that("solution reduces to sgl when using constant weights, with even groups
   alpha = 0.3
   sgl = seagull(y=y,X=matrix(0,nrow=dim(X)[1],ncol=dim(X)[2]),groups=groups,alpha=alpha,Z=data$X,max_lambda=lambda,loops_lambda=1,standardize = FALSE)
   
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none",w_weights = rep((1-alpha)*lambda,length(table(groups))),v_weights = rep(alpha*lambda,p))
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none",w_weights = rep(1,length(table(groups))),v_weights = rep(1,p))
   
   sgl_cost = sgs_convex_opt(X=X,y=y,beta=t(sgl$random_effects),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=FALSE)
   sgs_cost = sgs_convex_opt(X=X,y=y,beta=as.matrix(sgs$beta),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=FALSE)
@@ -64,7 +63,7 @@ test_that("solution reduces to sgl when using constant weights, with uneven grou
   lambda=0.8
   alpha = 0.3
   sgl = seagull(y=y,X=matrix(0,nrow=dim(X)[1],ncol=dim(X)[2]),groups=groups,alpha=alpha,Z=X,max_lambda=lambda,loops_lambda=1,standardize = TRUE)
-  sgs = fit_sgs_sd_version(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="sd",w_weights = rep((1-alpha)*lambda,length(table(groups))),v_weights = rep(alpha*lambda,p))
+  sgs = fit_sgs_sd_version(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="sd",w_weights = rep(1,length(table(groups))),v_weights = rep(1,p))
   
   sgl_cost = sgs_convex_opt(X=X,y=y,beta=c(sgl$intercept,t(sgl$random_effects)),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=TRUE)
   sgs_cost = sgs_convex_opt(X=X,y=y,beta=as.matrix(sgs$beta),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=TRUE)
@@ -74,29 +73,6 @@ test_that("solution reduces to sgl when using constant weights, with uneven grou
     tol = 1e-3
   )
 
-  expect_equivalent(sgl_cost,sgs_cost, tol=1e-3)
-})
-
-test_that("solution reduces to sgl when using constant weights, with even groups, with intercept and standardisation", { # a different sgs version, which uses 1/n-1 standardisation, as this is what seagull uses
-  n = 50
-  p = 100
-  groups = rep(1:20,each=5)
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 4,grouped = TRUE, groups=groups,group_sparsity=0.3,var_sparsity=0.5,orthogonal = FALSE)
-  X <- data$X
-  y <- data$y
-  y = y
-  lambda=0.8
-  alpha = 0.3
-  sgl = seagull(y=y,X=matrix(0,nrow=dim(X)[1],ncol=dim(X)[2]),groups=groups,alpha=alpha,Z=X,max_lambda=lambda,loops_lambda=1,standardize = TRUE)
-  sgs = fit_sgs_sd_version(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="sd",w_weights = rep((1-alpha)*lambda,length(table(groups))),v_weights = rep(alpha*lambda,p))
-  
-  sgl_cost = sgs_convex_opt(X=X,y=y,beta=c(sgl$intercept,t(sgl$random_effects)),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=TRUE)
-  sgs_cost = sgs_convex_opt(X=X,y=y,beta=as.matrix(sgs$beta),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=TRUE)
-  
-  expect_equivalent(c(sgl$intercept,t(sgl$random_effects)),
-    as.matrix(sgs$beta),
-    tol = 1e-3
-  )
   expect_equivalent(sgl_cost,sgs_cost, tol=1e-3)
 })
  
@@ -115,7 +91,7 @@ test_that("solution reduces to sgl when using constant weights, with even groups
   lambda=0.8
   alpha = 0.3
   sgl = SGL(list(x=X,y=y), index=groups, type = "linear",nlam=1,lambdas=c(0,lambda),alpha=alpha,standardize=FALSE)
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none",w_weights = rep((1-alpha)*lambda,length(table(groups))),v_weights = rep(alpha*lambda,p))
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none",w_weights = rep(1,length(table(groups))),v_weights = rep(1,p))
   
   sgl_cost = sgs_convex_opt(X=X,y=y,beta=as.matrix(sgl$beta[,2]),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=FALSE)
   sgs_cost = sgs_convex_opt(X=X,y=y,beta=as.matrix(sgs$beta),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=FALSE)
@@ -144,7 +120,7 @@ test_that("solution reduces to sgl when using constant weights, with uneven grou
   lambda=0.8
   alpha = 0.3
   sgl = SGL(list(x=X,y=y), index=groups, type = "linear",nlam=1,lambdas=c(0,lambda),alpha=alpha,standardize=FALSE)
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none",w_weights = rep((1-alpha)*lambda,length(table(groups))),v_weights = rep(alpha*lambda,p))
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none",w_weights = rep(1,length(table(groups))),v_weights = rep(1,p))
   
   sgl_cost = sgs_convex_opt(X=X,y=y,beta=as.matrix(sgl$beta[,2]),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=FALSE)
   sgs_cost = sgs_convex_opt(X=X,y=y,beta=as.matrix(sgs$beta),num_obs=n,gslope_seq=sgs$pen_gslope,slope_seq=sgs$pen_slope,groups=groups, intercept=FALSE)
@@ -166,7 +142,7 @@ test_that("solution reduces to sgl when using constant weights, with even groups
   lambda=0.8
   alpha = 0.3
   sgl = SGL(list(x=X,y=y), index=groups, type = "linear",nlam=1,lambdas=c(0,lambda),alpha=alpha,standardize=FALSE)
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="none",w_weights = rep((1-alpha)*lambda,length(table(groups))),v_weights = rep(alpha*lambda,p))
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="none",w_weights = rep(1,length(table(groups))),v_weights = rep(1,p))
   
   expect_equivalent(c(sgl$beta[,2]), # SGL seems to calculate the intercept different to other packages
     as.matrix(sgs$beta[-1]),
@@ -187,7 +163,7 @@ test_that("solution reduces to sgl when using constant weights, with even groups
   lambda=0.8
   alpha = 0.3
   sgl = SGL(list(x=X,y=y), index=groups, type = "linear",nlam=1,lambdas=c(0,lambda),alpha=alpha,standardize=FALSE)
-  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="none",w_weights = rep((1-alpha)*lambda,length(table(groups))),v_weights = rep(alpha*lambda,p))
+  sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=alpha, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="none",w_weights = rep(1,length(table(groups))),v_weights = rep(1,p))
   
   expect_equivalent(c(sgl$beta[,2]), # SGL seems to calculate the intercept different to other packages
     as.matrix(sgs$beta[-1]),

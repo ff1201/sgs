@@ -124,7 +124,9 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   # pre-process data
   # ------------------------------------------------------------- 
   num_vars = dim(X)[2]
+  if (type == "logistic" & intercept){num_vars = dim(X)[2]+1} # fit intercept directly for logistic model
   num_obs = dim(X)[1]
+  groups_pen = groups
 
   if (sum(X==0) > (num_vars*num_obs)/2){
     warnings("X appears to be a sparse matrix. Try converting to dgCMatrix type for improved performance")
@@ -155,22 +157,15 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
       y = standardise_out$y
       y_mean = standardise_out$y_mean
       scale_pen = standardise_out$scale_pen
+      if (type == "logistic" & intercept){ 
+        X = cbind(1,X)
+        groups = c(1,groups+1)
+      }
   }
 
   # -------------------------------------------------------------
   # set values
   # ------------------------------------------------------------- 
-  wt = as.numeric(sqrt(rep(table(groups),table(groups)))) # Adjust for group weights
-  inv_wt = 1/wt
-  group_ids = getGroupID(groups) 
-  len_each_grp = sapply(group_ids, length)
-  wt_per_grp = sqrt(len_each_grp)
-  wt_per_grp = wt_per_grp[names(group_ids)]
-  if (is.null(x0)) {x0 = rep(0,num_vars)}
-  num_groups = length(unique(groups))
-  success = 0 # checks whether convergence happened
-  LS_EPS = .Machine$double.eps # R accuracy
-
   # type of model
   if (type == "linear"){ 
     if (is_sparse){
@@ -196,7 +191,7 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
 
   # weights
   if (is.null(v_weights) & is.null(w_weights)){
-    pens_out = generate_penalties(gFDR, vFDR, pen_method, groups, alpha)
+    pens_out = generate_penalties(gFDR, vFDR, pen_method, groups_pen, alpha)
     pen_slope_org = pens_out$pen_slope_org
     pen_gslope_org = pens_out$pen_gslope_org
     pen_slope = alpha*lambda*pen_slope_org
@@ -218,55 +213,16 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   }
 
   # -------------------------------------------------------------
-  # initial fitting values
-  # ------------------------------------------------------------- 
-  step_size = 1/init_lipschitz(f=f,f_grad=f_grad, x0=x0, f_opts = f_opts, f_grad_opts = f_grad_opts)
-  z = proxGroupSortedL1(y=x0*wt, lambda=pen_gslope*step_size,group=groups,group_id=group_ids)
-  z = inv_wt*z
-  fz = f(y=y, X=X, input = z, num_obs = num_obs)
-  grad_fz = f_grad(y=y, X=X, input = z, num_obs = num_obs) # loss gradient at z
-  if (is.null(u)) {u= rep(0,num_vars)}
-  x = sortedL1Prox(x=z - (step_size * (grad_fz)) ,lambda=pen_slope*step_size)
-
-  # -------------------------------------------------------------
   # fitting
   # ------------------------------------------------------------- 
-  for (it in 1:max_iter){
-    fz = f(y=y, X=X, input = z, num_obs = num_obs)
-    grad_fz = f_grad(y=y, X=X, input =z, num_obs = num_obs)
-    x = sortedL1Prox(x=z - (step_size * (u + (grad_fz))) ,lambda=pen_slope*step_size)
-    incr = x - z
-    norm_incr = norm(incr,type="2")
-    if (norm_incr > 1e-7){
-      for (it_ls in 1:max_iter_backtracking){ # Line search
-        x = sortedL1Prox(x=z - (step_size * (u + (grad_fz))) ,lambda=pen_slope*step_size)
-        incr = x - z
-        norm_incr = norm(incr,type="2")
-        rhs = fz + crossprod_mat(grad_fz,incr) + (norm_incr ^ 2) / (2 * step_size)
-        ls_tol = f(y=y, X=X, input = x, num_obs = num_obs) - rhs        
-        if (as.numeric(ls_tol) <= as.numeric(LS_EPS)){
-          break
-        }
-        else {
-          step_size = step_size*backtracking 
-        }
-      }
-    }     
-
-    z = proxGroupSortedL1(y=wt*x + (step_size/wt)*u, lambda=pen_gslope*step_size,group=groups,group_id=group_ids)
-    z = z*inv_wt
-    u = u + (x - z) / step_size
-
-    certificate = norm_incr / step_size
-
-    if (certificate < tol){ # Check for convergence
-      success = 1
-      break
-    }
-  if (verbose==TRUE){print(paste0("Iteration: ", it,"/",max_iter, " done"))}
+  if (type == "logistic" & intercept){
+    fit_out = run_atos_log_inter(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, step_size, x0, z, u,
+                          pen_slope, pen_gslope, f, f_grad,f_opts, f_grad_opts, crossprod_mat,verbose,groups_pen)
+  } else {  
+    fit_out = run_atos(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, step_size, x0, z, u,
+                          pen_slope, pen_gslope, f, f_grad,f_opts, f_grad_opts, crossprod_mat,verbose)
   }
-
-  if (success == 0){ # check for convergence
+  if (fit_out$success == 0){ # check for convergence
     warning("algorithm did not converge, try using more iterations")
   } else {if (verbose==TRUE){print("Algorithm converged")}}
 
@@ -274,6 +230,8 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   # generate output
   # ------------------------------------------------------------- 
   out = c()
+  x = fit_out$x
+  z = fit_out$z
   out$x_beta = x
   if (max((x-z)^2) < 1e-3 & mean((x-z)^2) < 1e-3){ # if solutions are very similar, pick more stable version
     if (length(which(x!=0)) <= length(which(z!=0))){ # Picking the solution with less residual values, if this is true, x is picked
@@ -285,8 +243,15 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
     out$beta = as.matrix(x)
   }
 
+  if (type == "logistic" & intercept){
+    X = X[,-1]
+    log_intercept = out$beta[1]
+    out$beta = out$beta[-1]
+    groups = groups[-1]-1
+    num_vars = num_vars - 1
+  }
   # scale beta depending on transformations
-  if (standardise!="none"){ 
+  if (standardise != "none"){ 
     out$beta = out$beta/X_scale
     out$x_beta = out$x_beta/X_scale
   }
@@ -309,8 +274,13 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   out$group.effects = which_groups_out[[2]]
 
   if (intercept){ # get beta back to original scale
+    if (type == "linear"){
     out$beta = as.matrix(c(y_mean - sum(X_center*out$beta),out$beta))
     out$x_beta = as.matrix(c(y_mean - sum(X_center*out$x_beta),out$x_beta))
+    } else {
+    out$beta = as.matrix(c(log_intercept,out$beta))
+    out$x_beta = as.matrix(c(log_intercept,out$x_beta))
+    }
   } 
 
   if (is.null(colnames(X))){ # Add variable names to output
@@ -326,17 +296,18 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
         rownames(out$beta) = colnames(X)
       }
   }
+
   out$beta = as(out$beta,"CsparseMatrix")
   out$z = z
   out$x = x
-  out$u = u
+  out$u = fit_out$u
   out$type = type
   out$pen_slope = pen_slope_org
   out$pen_gslope = pen_gslope_org
   out$lambda=lambda_org
-  out$success = success
-  out$num_it = it
-  out$certificate = certificate
+  out$success = fit_out$success
+  out$num_it = fit_out$it
+  out$certificate = fit_out$certificate
   out$intercept = intercept
   class(out) <- "sgs"
   
