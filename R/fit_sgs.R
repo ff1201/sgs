@@ -138,7 +138,7 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
     warning("this package is not optimised for SLOPE. Consider using the SLOPE package instead")
   }
   if (alpha == 0 & lambda != 0){
-    warning("this package is not optimised for group SLOPE. Consider using the grpSLOPE package instead")
+    warning("this package is not optimised for group SLOPE")
   }
   if (lambda == 0){
     warning("this package is not optimised for OLS. Consider using the lm function instead")

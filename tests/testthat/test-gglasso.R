@@ -1,7 +1,7 @@
 # gglasso doesn't apply standardisation, so can't compare directly with standardisation
 test_that("solution reduces to grplasso when alpha=0 and constant weights, with uneven groups, with no intercept and standardisation", {
   library(gglasso)
-  options(warn=-1) # to surpress warning about using grpSLOPE package for alpha = 0
+  options(warn=-1) # to surpress warning about using package for alpha = 0
   groups = c(rep(1:5, each=3),
            rep(6:11, each=4),
            rep(12:16, each=5), 
@@ -28,7 +28,7 @@ test_that("solution reduces to grplasso when alpha=0 and constant weights, with 
   
 test_that("solution reduces to grplasso when alpha=0 and constant weights, with even groups, with no intercept and standardisation", {
   library(gglasso)
-  options(warn=-1) # to surpress warning about using grpSLOPE package for alpha = 0
+  options(warn=-1) # to surpress warning about using package for alpha = 0
   groups = rep(1:20,each=5)
   p=100
   n=50
@@ -52,7 +52,7 @@ test_that("solution reduces to grplasso when alpha=0 and constant weights, with 
 
 test_that("solution reduces to grplasso when alpha=0 and constant weights, with uneven groups, with intercept but no standardisation", {
   library(gglasso)
-  options(warn=-1) # to surpress warning about using grpSLOPE package for alpha = 0
+  options(warn=-1) # to surpress warning about using package for alpha = 0
   groups = c(rep(1:5, each=3),
            rep(6:11, each=4),
            rep(12:16, each=5), 
@@ -79,7 +79,7 @@ test_that("solution reduces to grplasso when alpha=0 and constant weights, with 
   
 test_that("solution reduces to grplasso when alpha=0 and constant weights, with even groups, with intercept but no standardisation", {
   library(gglasso)
-  options(warn=-1) # to surpress warning about using grpSLOPE package for alpha = 0
+  options(warn=-1) # to surpress warning about using package for alpha = 0
   groups = rep(1:20,each=5)
   p=100
   n=50

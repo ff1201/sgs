@@ -70,7 +70,7 @@ generate_toy_data <- function(p, n, rho=0, seed_id=2, grouped=TRUE, groups, nois
 
   if (grouped == TRUE){
     group2 <- paste0("grp", groups)
-    group.id_org <- grpSLOPE::getGroupID(group2)
+    group.id_org <- getGroupID(group2)
     group.length_org <- sapply(group.id_org, FUN=length)
     n_group <- length(group.id_org) # this extracts the total number of groups:
   
