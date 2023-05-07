@@ -38,7 +38,7 @@ generate_toy_data(
 
 \item{group_sparsity}{Defines the level of group sparsity. Must be in the range \eqn{[0,1]}.}
 
-\item{var_sparsity}{Defines the level of variable sparsity. Must be in the range \eqn{[0,1]}. If item{grouped=TRUE}, this defines the level of sparsity within each group, not globally.}
+\item{var_sparsity}{Defines the level of variable sparsity. Must be in the range \eqn{[0,1]}. If \code{grouped=TRUE}, this defines the level of sparsity within each group, not globally.}
 
 \item{orthogonal}{Logical flag as to whether the input matrix should be orthogonal.}
 
@@ -52,17 +52,16 @@ generate_toy_data(
 }
 \value{
 A list containing:
-item{y}{The response vector.}
-item{X}{The input matrix.}
-item{true_beta}{The true values of \eqn{beta} used to generate the response.}
-item{true_grp_id}{Indices of which groups are non-zero in item{true_beta}.}
+\item{y}{The response vector.}
+\item{X}{The input matrix.}
+\item{true_beta}{The true values of \eqn{beta} used to generate the response.}
+\item{true_grp_id}{Indices of which groups are non-zero in item{true_beta}.}
 }
 \description{
-Generates sparse toy data.
-The data is generated under a linear model. The generated data can be grouped and sparsity can be provided at both a group and/or variable level.
+Generates different types of datasets, which can then be fitted using sparse-group SLOPE.
 }
 \details{
-Generates different types of datasets, which can then be fitted using sparse-group SLOPE.
+The data is generated under a Gaussian linear model. The generated data can be grouped and sparsity can be provided at both a group and/or variable level.
 }
 \examples{
 # specify a grouping structure
@@ -74,7 +73,4 @@ groups = c(rep(1:20, each=3),
 # generate data
 data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
 
-}
-\references{
-F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 }

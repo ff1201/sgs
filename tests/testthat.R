@@ -1,4 +1,3 @@
 library(testthat)
-library(glmnet)
-test_dir("testthat")
-options(warn = -1)
+library(sgs)
+test_check("sgs")

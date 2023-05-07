@@ -22,7 +22,7 @@
 #'
 #' Plots the pathwise solution of a cross-validation fit, from a call to [fit_sgs_cv()] 
 #'
-#' @param fit Object an object of class `"sgs_cv"` from a call to [fit_sgs()].
+#' @param fit Object an object of class \code{"sgs_cv"} from a call to [fit_sgs()].
 #' @param how_many Defines how many predictors to plot. Plots the predictors in decreasing order of largest absolute value.
 #' @param ... further arguments passed to or from other methods.
 #' 
@@ -30,8 +30,8 @@
 #' @family SGS-methods
 #' 
 #' @return A list containing:
-#' item{response}{The predicted response. In the logistic case, this represents the predicted class probabilities.}
-#' item{class}{The predicted class assignments. Only returned if type = "logistic" in the `"sgs"` object.}
+#' \item{response}{The predicted response. In the logistic case, this represents the predicted class probabilities.}
+#' \item{class}{The predicted class assignments. Only returned if type = "logistic" in the \code{"sgs"} object.}
 #'
 #' @examples
 #' # specify a grouping structure
@@ -43,7 +43,9 @@
 #' # generate data
 #' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
 #' # run SGS 
-#' cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=FALSE)
+#' cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", 
+#' nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, 
+#' min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=FALSE)
 #' plot(cv_model, how_many = 10)
 #' @export
 

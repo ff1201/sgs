@@ -20,51 +20,69 @@
 
 #' fit an SGS model
 #' 
-#' Sparse-group SLOPE (SGS) main fitting function.
+#' Sparse-group SLOPE (SGS) main fitting function. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
 #' 
-#' Fits SGS models using ATOS.
+#' \code{fit_sgs()} fits an SGS model using ATOS. SGS is a sparse-group method, so that it selects both variables and groups. Unlike group selection approaches, not every variable within a group is set as active.
+#' It solves the convex optimisation problem given by 
+#' \deqn{
+#'   \hat{\beta}_\text{SGS} = \argmin_{b\in \mathbb{R}^p}\left\{ \frac{1}{2n}\ell (b ; y, \mathbf{X}) + \lambda \alpha \sum_{i=1}^{p}v_i |b|_{(i)} + \lambda (1-\alpha)\sum_{g=1}^{m}w_g \sqrt{p_g} \|b^{(g)}\|_2 \right\},
+#' }
+#' where \eqn{ell(\cdot)} is the loss function. In the case of the linear model, the loss function is given by the mean-squared error loss:
+#' \deqn{
+#'  \ell(b; y, \mathbf{X}) = \left\|y-\mathbf{X}b \right\|_2^2.
+#' }
+#' In the logistic model, the loss function is given by 
+#' \deqn{
+#' \ell(b;y,\mathbf{X})=-1/n \log(\mathcal{L}(b; y, \mathbf{X})).
+#' }
+#' where the log-likelihood is given by
+#' \deqn{
+#'  \mathcal{L}(b; y, \mathbf{X}) = \sum_{i=1}^{n}\left\{y_i b^\intercal x_i - \log(1+\exp(b^\intercal x_i)) \right\}.
+#' }
+#' SGS can be seen to be a convex combination of SLOPE and gSLOPE, balanced through \code{alpha}, such that it reduces to SLOPE for \code{alpha = 0} and to gSLOPE for \code{alpha = 1}. 
+#' The penalty parameters in SGS are sorted so that the largest coefficients are matched with the largest penalties, to reduce the FDR.
 #'
-#' @param X Input matrix of dimensions \eqn{p \times n}.
-#' @param y Output vector of dimension \eqn{n}.
+#' @param X Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).
+#' @param y Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.
 #' @param groups A grouping structure for the input data. Should take the form of a vector of group indices.
-#' @param pen_method The type of penalty sequences to use.
-#'   - `1` uses the vMean SGS and gMean gSLOPE sequences. 
-#'   - `2` uses the vMax SGS and gMean gSLOPE sequences.
-#'   - `3` uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
-#' @param type The type of regression to perform. Supported values are: "linear" and "logistic".
-#' @param lambda The value of \eqn{\lambda}, which defines the level of sparsity in the model. Can be picked using cross-validation (see fit_sgs_cv)
-#' @param alpha The value of \eqn{\alpha}, defines the convex balance between SLOPE and gSLOPE.
-#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties.
-#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties.
+#' @param pen_method The type of penalty sequences to use (see Feser et. al. (2023)):
+#'   - \code{"1"} uses the vMean SGS and gMean gSLOPE sequences. 
+#'   - \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
+#'   - \code{"3"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
+#' @param type The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.
+#' @param lambda The value of \eqn{\lambda}, which defines the level of sparsity in the model. Can be picked using cross-validation (see [fit_sgs_cv()]). Must be a positive value.
+#' @param alpha The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.
+#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties. Must be between 0 and 1.
+#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties. Must be between 0 and 1.
 #' @param max_iter Maximum number of ATOS iterations to perform. 
-#' @param backtracking The backtracking parameter, as defined in Pedregosa et. al. (2018) as \eqn{\tau}.
+#' @param backtracking The backtracking parameter, \eqn{\tau}, as defined in Pedregosa et. al. (2018).
 #' @param max_iter_backtracking Maximum number of backtracking line search iterations to perform per global iteration.
-#' @param tol Convergence threshold for the stopping criteria.
-#' @param standardise Type of standardisation. 
-#'   - `l2` standardises the input data to have \eqn{\ell_2} norms of one.
-#'   - `l1` standardises the input data to have \eqn{\ell_1} norms of one.
-#'   - `sd` standardises the input data to have standard deviation of one.
-#'   - `none` no standardisation applied.
+#' @param tol Convergence tolerance for the stopping criteria.
+#' @param standardise Type of standardisation to perform on \code{X}: 
+#'   - \code{"l2"} standardises the input data to have \eqn{\ell_2} norms of one.
+#'   - \code{"l1"} standardises the input data to have \eqn{\ell_1} norms of one.
+#'   - \code{"sd"} standardises the input data to have standard deviation of one.
+#'   - \code{"none"} no standardisation applied.
 #' @param intercept Logical flag for whether to fit an intercept.
-#' @param v_weights Optional vector for the variable penalty weights. Overrides the penalties from pen_method if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}
-#' @param w_weights Optional vector for the group penalty weights. Overrides the penalties from pen_method if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}
+#' @param v_weights Optional vector for the variable penalty weights. Overrides the penalties from \code{pen_method} if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.
+#' @param w_weights Optional vector for the group penalty weights. Overrides the penalties from \code{pen_method} if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.
 #' @param x0 Optional initial vector for \eqn{x_0}.
 #' @param u Optional initial vector for \eqn{u}.
 #' @param verbose Logical flag for whether to print fitting information.
 #'
 #' @return A list containing:
-#' item{beta}{The fitted values from the regression.}
-#' item{x}{The solution to the OPT (See Pedregosa et. al. (2018))}
-#' item{u}{The solution to the dual problem (See Pedregosa et. al. (2018))}
-#' item{z}{The updated values from applying the first proximal operator. (See Pedregosa et. al. (2018))}
-#' item{type}{Indicates which type of regression was performed.}
-#' item{pen_slope}{Vector of the variable penalty sequence.}
-#' item{pen_gslope}{Vector of the group penalty sequence.}
-#' item{lambda}{Value of \eqn{\lambda} used to fit the model.}
-#' item{success}{Logical flag indicating whether ATOS converged, according to item{tol}.}
-#' item{num_it}{Number of iterations performed. If convergence is not reached, this will be item{max_iter}.}
-#' item{certificate}{Final value of convergence criteria.}
-#' item{intercept}{Logical flag indicating whether an intercept was fit.}
+#' \item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{u}, which is usually the former.}
+#' \item{x}{The solution to the original problem (see Pedregosa et. al. (2018)).}
+#' \item{u}{The solution to the dual problem (see Pedregosa et. al. (2018)).}
+#' \item{z}{The updated values from applying the first proximal operator (see Pedregosa et. al. (2018)).}
+#' \item{type}{Indicates which type of regression was performed.}
+#' \item{pen_slope}{Vector of the variable penalty sequence.}
+#' \item{pen_gslope}{Vector of the group penalty sequence.}
+#' \item{lambda}{Value of \eqn{\lambda} used to fit the model.}
+#' \item{success}{Logical flag indicating whether ATOS converged, according to \code{tol}.}
+#' \item{num_it}{Number of iterations performed. If convergence is not reached, this will be \code{max_iter}.}
+#' \item{certificate}{Final value of convergence criteria.}
+#' \item{intercept}{Logical flag indicating whether an intercept was fit.}
 #'
 #' @examples
 #' # specify a grouping structure
@@ -76,11 +94,11 @@
 #' # generate data
 #' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
 #' # run SGS 
-#' model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
+#' model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
+#' vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 #' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+#' @references F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 #' @export
-
-#source("utils.R")
 
 fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0.95, vFDR=0.1, gFDR=0.1, max_iter = 5000, backtracking = 0.7, max_iter_backtracking = 100, tol = 1e-5, standardise = "l2", intercept = TRUE,w_weights=NULL,v_weights=NULL,x0 = NULL, u = NULL,verbose=FALSE){
   # -------------------------------------------------------------
@@ -100,6 +118,12 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   }
   if (length(y) != nrow(X)) {
     stop("the number of samples in y must match the number of rows in X")
+  }
+  if (type == "logistic" & !is.binary(y)){
+    stop("when using logistic regression the response, y, needs to be a binary variable")
+  }
+  if (type == "linear" & is.binary(y)){
+    stop("using a binary variable with linear regression. Use logistic instead")
   }
   if (lambda<0){
     stop("lambda can not be negative")
@@ -216,10 +240,10 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   # fitting
   # ------------------------------------------------------------- 
   if (type == "logistic" & intercept){
-    fit_out = run_atos_log_inter(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, step_size, x0, z, u,
+    fit_out = run_atos_log_inter(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, x0, u,
                           pen_slope, pen_gslope, f, f_grad,f_opts, f_grad_opts, crossprod_mat,verbose,groups_pen)
   } else {  
-    fit_out = run_atos(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, step_size, x0, z, u,
+    fit_out = run_atos(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, x0, u,
                           pen_slope, pen_gslope, f, f_grad,f_opts, f_grad_opts, crossprod_mat,verbose)
   }
   if (fit_out$success == 0){ # check for convergence

@@ -11,11 +11,11 @@ generate_penalties(gFDR, vFDR, pen_method, groups, alpha)
 
 \item{vFDR}{Defines the desired variable FDR level, which determines the shape of the variable penalties.}
 
-\item{pen_method}{The type of penalty sequences to use.
+\item{pen_method}{The type of penalty sequences to use (see Feser et. al. (2023)):
 \itemize{
-\item \code{1} uses the vMean SGS and gMean gSLOPE sequences.
-\item \code{2} uses the vMax SGS and gMean gSLOPE sequences.
-\item \code{3} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
+\item \code{"1"} uses the vMean SGS and gMean gSLOPE sequences.
+\item \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
+\item \code{"3"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
 }}
 
 \item{groups}{A grouping structure for the input data. Should take the form of a vector of group indices.}
@@ -24,11 +24,16 @@ generate_penalties(gFDR, vFDR, pen_method, groups, alpha)
 }
 \value{
 A list containing:
-item{pen_slope_org}{A vector of the variable penalty sequence.}
-item{pen_gslope_org}{A vector of the group penalty sequence.}
+\item{pen_slope_org}{A vector of the variable penalty sequence.}
+\item{pen_gslope_org}{A vector of the group penalty sequence.}
 }
 \description{
 Generates variable and group penalties for SGS.
+}
+\details{
+The vMean and vMax SGS sequences are variable sequences derived specifically to give variable FDR-control for SGS under orthogonal designs (see Feser et. al. (2023)).
+The BH SLOPE sequence is derived in Bodgan et. al. (2015) and has links to the Benjamini-Hochberg critical values. The sequence provides variable FDR-control for SLOPE under orthogonal designs.
+The gMean gSLOPE sequence is derived in Brzyski et. al. (2015) and provides group FDR-control for gSLOPE under orthogonal designs.
 }
 \examples{
 # specify a grouping structure
@@ -43,4 +48,8 @@ sequences = generate_penalties(gFDR=0.1, vFDR=0.1, pen_method=1, groups=groups, 
 }
 \references{
 F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+
+M. Bogdan, E. Van den Berg, C. Sabatti, W. Su, E. Candes (2015) \emph{SLOPE — Adaptive variable selection via convex optimization}, \url{https://projecteuclid.org/journals/annals-of-applied-statistics/volume-9/issue-3/SLOPEAdaptive-variable-selection-via-convex-optimization/10.1214/15-AOAS842.full}
+
+D. Brzyski, W. Su, M. Bodgdan (2015) \emph{Group SLOPE - adaptive selection of groups of predictors}, \url{https://arxiv.org/abs/1511.09078}
 }

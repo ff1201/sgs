@@ -15,8 +15,8 @@
 }
 \value{
 A list containing:
-item{response}{The predicted response. In the logistic case, this represents the predicted class probabilities.}
-item{class}{The predicted class assignments. Only returned if type = "logistic" in the \code{"sgs"} object.}
+\item{response}{The predicted response. In the logistic case, this represents the predicted class probabilities.}
+\item{class}{The predicted class assignments. Only returned if type = "logistic" in the \code{"sgs"} object.}
 }
 \description{
 Plots the pathwise solution of a cross-validation fit, from a call to \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}
@@ -31,7 +31,9 @@ groups = c(rep(1:20, each=3),
 # generate data
 data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
 # run SGS 
-cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=FALSE)
+cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", 
+nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, 
+min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=FALSE)
 plot(cv_model, how_many = 10)
 }
 \seealso{

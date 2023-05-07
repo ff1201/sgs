@@ -17,36 +17,15 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ###############################################################################
-
-###################################################
-#                 Packages
-###################################################
-library(Rcpp)
-library(Matrix)
-library(SLOPE)
-library(grpSLOPE)
-library(MASS)
-library(VGAM)
-#library(RColorBrewer)
-library(caret)
-library(Rlab)
-library(faux)
-library(glmnet)
-#library(pracma)
-
-###################################################
-#                 General functions
-###################################################
-## Stop 1 dim matrices becoming vectors
+# Stop 1 dim matrices becoming vectors
   old <- `[`
 `[` <- function(...) { old(..., drop=FALSE) }
- 
-# matrix multiplcation
-arma_code <-
-  "arma::vec arma_mm(const arma::mat& m, const arma::vec& v) {
-       return m * v;
-   };"
-arma_mm = cppFunction(code = arma_code, depends = "RcppArmadillo")
+
+# checks if a variable is binary
+is.binary <- function(v) {
+    x <- unique(v)
+    length(x) - sum(is.na(x)) == 2L
+}
 
 is.decreasing <- function(x){ # checks if a sequence is decreasing
   state = TRUE
@@ -56,7 +35,7 @@ is.decreasing <- function(x){ # checks if a sequence is decreasing
     }
   }
   return(state)
-} 
+}
 
 sigmoid = function(x) {
    1 / (1 + exp(-x))
@@ -73,13 +52,13 @@ return(p_sequence)
 }
 
 mse_grad <- function(y, X, input,num_obs){ # gradient of loss
-  r = arma_mm(X,input) - y
+  r = arma_mv(X,input) - y
   out = crossprod(X, r)/num_obs
   return(out)
 }
 
 mse_loss <- function(y, X, input, num_obs){ # loss function
-  out = as.double(crossprod(y-arma_mm(X,input))/(2*num_obs))
+  out = as.double(crossprod(y-arma_mv(X,input))/(2*num_obs))
   return(out)
 }
 
@@ -112,7 +91,7 @@ logsig <- function(input){
 
 log_loss <- function(y,X,input,num_obs){# stable version for y{0,1}
   #eps = 1e-15
-  z = arma_mm(X,input)
+  z = arma_mv(X,input)
   #z <- pmax(pmin(z, 1 - eps), eps)
   out = mean((1-y)*z - logsig(z))
   return(out)
@@ -131,9 +110,9 @@ expit_b <- function(t,b){
 }
 
 log_grad <- function(y,X,input,num_obs){# stable version for y{0,1}
-  z = arma_mm(X,input)
+  z = arma_mv(X,input)
   s = expit_b(z,y)
-  out = (arma_mm(t(X),s))/dim(X)[1]
+  out = (arma_mv(t(X),s))/dim(X)[1]
   return(out)
 }
 
@@ -169,7 +148,7 @@ init_lipschitz <- function(f, f_grad, x0, f_opts, f_grad_opts){
 
 norm_vec <- function(x) sqrt(sum(x^2))
 
-proxGroupSortedL1 <- function(y, lambda,group, group_id, ...) { 
+proxGroupSortedL1 <- function(y, lambda,group, group_id, ...) {
   # proximal operator for group SLOPE - adapted so that the 0/0 = NaN error doesn't occur
   n.group = length(unique(group))
 
@@ -199,7 +178,7 @@ proxGroupSortedL1 <- function(y, lambda,group, group_id, ...) {
   return(prox.solution)
 }
 
-sgs_convex_opt = function(X,y,beta,groups,num_obs,gslope_seq,slope_seq,intercept=TRUE){  
+sgs_convex_opt = function(X,y,beta,groups,num_obs,gslope_seq,slope_seq,intercept=TRUE){
   # function to evaluation convex optimisation function
   beta_org = beta
   if (intercept==TRUE){beta = beta[-1]}
@@ -217,14 +196,14 @@ sgs_convex_opt = function(X,y,beta,groups,num_obs,gslope_seq,slope_seq,intercept
     loss = mse_loss(y=y,X=cbind(1,X),input=beta_org,num_obs = num_obs)
   } else {loss = mse_loss(y=y,X=X,input=beta_org,num_obs = num_obs)}
   group_norm_sgs = sqrt(group_lengths)*group_norm_sgs[order(sqrt(group_lengths)*group_norm_sgs, decreasing=TRUE)]
-  pen_g = sum(gslope_seq*group_norm_sgs) 
+  pen_g = sum(gslope_seq*group_norm_sgs)
   beta = beta[order(abs(beta),decreasing=TRUE)]
   pen_s = sum(slope_seq*abs(beta))
   out = loss + pen_g + pen_s
   return(out)
 }
 
-fdr_sensitivity = function(fitted_ids, true_ids,num_coef){ 
+fdr_sensitivity = function(fitted_ids, true_ids,num_coef){
   # calculates FDR, FPR, and sensitivity
   num_true = length(intersect(fitted_ids,true_ids))
   num_false = length(fitted_ids) - num_true
@@ -270,15 +249,15 @@ generate_lambda_path <- function(X,y,groups,alpha,min_frac,nlambda, v_weights, w
 
   f_0 = mse_grad(y=y,X=X,input=rep(0,dim(X)[2]),num_obs=dim(X)[1])
   f_0_sorted = sort(abs(f_0),decreasing=TRUE)
-  
-  max_lambda = max(cumsum(f_0_sorted)/cumsum(alpha*v_weights + (1-alpha)*w_weights_expanded)) 
+
+  max_lambda = max(cumsum(f_0_sorted)/cumsum(alpha*v_weights + (1-alpha)*w_weights_expanded))
 
   # calculate the lambda path, including finding lambda_max.
 
   max_lambda = max_lambda/0.95 # to ensure first variable doesn't enter (first model is null model)
   min_lambda <- min_frac*max_lambda
-  
-  lambdas = exp(seq(log(max_lambda),log(min_lambda), (log(min_lambda) - log(max_lambda))/(nlambda-1))) 
+
+  lambdas = exp(seq(log(max_lambda),log(min_lambda), (log(min_lambda) - log(max_lambda))/(nlambda-1)))
   #lambdas <- exp(seq(log(max_lambda),log(min_lambda), (log(min_lambda) - log(max_lambda))/(nlambda-1))) # exponential quick decrease sequence (from Simon paper)
   #lambdas = seq(from = max_lambda, to = min_lambda,length.out=nlambda) # linear sequence
   #lambdas = seq(sqrt(max_lambda),sqrt(min_lambda),length.out=nlambda)^2 # quadratic sequence
@@ -351,10 +330,10 @@ sgs_var_penalty <- function(q, pen_g,p,lambda,alpha,m,group.sizes,method) {
 lambda.max <- rep(0, m)
 lambda.min <- rep(0, m)
 group.sizes=sort(group.sizes,decreasing=TRUE)
-for (i in 1:p){ 
+for (i in 1:p){
     p_sequence = rep(0,m)
     for (j in 1:m){
-        p_sequence[j] = (qnorm(1-(i*q)/(2*p)) - (1/3)*floor(alpha*group.sizes[j])*(1-alpha)*lambda*pen_g[j])/(alpha*lambda)  
+        p_sequence[j] = (qnorm(1-(i*q)/(2*p)) - (1/3)*floor(alpha*group.sizes[j])*(1-alpha)*lambda*pen_g[j])/(alpha*lambda)
     }
     lambda.max[i] <- max(p_sequence)
     lambda.min[i] <- min(p_sequence)
@@ -383,12 +362,12 @@ return(lambda.mean)
 } else if (method == "max"){
   return (lambda.max)
 } else {stop("method not valid")}
-} 
+}
 
 standardise_sgs <- function(X,y,standardise, intercept,num_obs,type="linear"){
   scale_pen = 1
   standardisation_occured = 0
-  y_mean = 0 
+  y_mean = 0
   X_center = 0
   X_scale = 1
 
@@ -421,8 +400,8 @@ standardise_sgs <- function(X,y,standardise, intercept,num_obs,type="linear"){
     X = sapply(1:dim(X)[2], function(i) X[,i]/X_scale[i])
     standardisation_occured = 1
     scale_pen = 1/num_obs
-  } else { standardisation_occured = 0 } # "none" 
-  if (intercept) { # center y and X 
+  } else { standardisation_occured = 0 } # "none"
+  if (intercept) { # center y and X
     if (type == "linear"){
     y_mean = mean(y)
     y = y - y_mean}
@@ -460,8 +439,8 @@ which_groups <- function(beta, groups){
   grp_counter = 1
   for (group_id in unique(groups)){
     group_inds = which(groups==group_id)
-    group.effects[grp_counter,]$effect = norm(beta[group_inds], type="2") 
-    grp_counter = grp_counter+1 
+    group.effects[grp_counter,]$effect = norm(beta[group_inds], type="2")
+    grp_counter = grp_counter+1
   }
   selected_group = group.effects[which(group.effects$effect!=0),]$group_id
   group.effects = as(group.effects$effect, "CsparseMatrix")
@@ -469,7 +448,13 @@ which_groups <- function(beta, groups){
   return(list(selected_group,group.effects))
 }
 
-generate_penalties_2 <- function(gFDR, vFDR, pen_method,num_groups,wt_per_grp, len_each_grp, num_vars,alpha,lambda){
+generate_penalties_2 <- function(gFDR, vFDR, pen_method,groups,alpha,lambda){
+  num_vars = length(groups)
+  group_ids = getGroupID(groups)
+  len_each_grp = sapply(group_ids, length)
+  wt_per_grp = sqrt(len_each_grp)
+  wt_per_grp = wt_per_grp[names(group_ids)]
+  num_groups = length(unique(groups))
   if (pen_method == 1){ # SGS variable mean
     pen_slope_org = BH_sequence(q=vFDR,p=num_vars)
     pen_gslope_org = grp_pen_v1(q=gFDR,pen_v=pen_slope_org,repeats=1e5,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp)
@@ -485,6 +470,74 @@ out$pen_gslope_org = pen_gslope_org
 return(out)
 }
 
+grp_pen_adjust <- function(q, pen_v,repeats,lambda,alpha,m,group.sizes) {
+lambda.max <- rep(0, m)
+lambda.min <- rep(0, m)
+num_repeats = repeats/length(group.sizes)
+z = c()
+for (j in 1:num_repeats){
+for (i in 1:length(group.sizes)){
+    z =append(z,sum(abs(rnorm(group.sizes[i]))))
+}
+}
+group.sizes = sort(group.sizes,decreasing=TRUE)
+num_vars = length(pen_v)
+z_fn = ecdf(z)
+an.error.occured = FALSE
+successful_roots = 0
+attempts = 0
+counter = 0
+counter2=0
+while (successful_roots!=m & attempts < 10){
+  an.error.occured = FALSE
+  successful_roots=0
+for (i in 1:m){
+      counter = 0
+      p_sequence = rep(0,m)
+      quantile_v = quantile(z,1-(i*q)/(m))
+      for (j in 1:m){
+        p_sequence[j] = (quantile_v - alpha*lambda*sum(pen_v[(counter+1):(counter+group.sizes[j])]))/((1-alpha)*lambda*group.sizes[j])
+        counter = counter+group.sizes[j]
+    }
+    lambda.max[i] <- max(p_sequence)
+    lambda.min[i] <- min(p_sequence)
+}
+cdfMean <- function(x) {
+    p.seq <- rep(0, m)
+    counter2=0
+    for (i in 1:m) {
+        p.seq[i] <- z_fn(sum(abs(x))*(1-alpha)*lambda*group.sizes[j]+alpha*lambda*sum(pen_v[(counter2+1):(counter2+group.sizes[j])]))
+        counter2 = counter2+group.sizes[j]
+    }
+    return(mean(p.seq))
+}
+
+lambda.mean <- rep(0, m)
+for (k in 1:m) {
+    if (lambda.min[k] == lambda.max[k]) {
+        lambda.mean[k] <- lambda.max[k]
+    } else {
+        # compute inverse of cdfMean at 1-fdr*k/n.group
+        tryCatch({cdfMean.inv <-uniroot(function(y) (cdfMean(y) - (1-q*k/(m))),
+                               lower = lambda.min[k], upper = lambda.max[k], extendInt="yes")},error = function(e) {an.error.occured <<- TRUE})
+        if (an.error.occured){
+
+        } else {
+        successful_roots = successful_roots + 1
+        lambda.mean[k] <- max(0,cdfMean.inv$root)}
+    }
+}
+ if (an.error.occured){
+          pen_v = pen_v*0.95
+        attempts = attempts + 1}
+}
+if (attempts >=9){
+  print("error")
+}
+return(list(lambda.mean,pen_v))}
+
+
+
 grp_pen_v1 <- function(q, pen_v,repeats,lambda,alpha,m,group.sizes) {
 lambda.max <- rep(0, m)
 lambda.min <- rep(0, m)
@@ -496,158 +549,13 @@ for (i in 1:length(group.sizes)){
 }
 }
 num_vars = length(pen_v)
-for (i in 1:m){ 
+for (i in 1:m){
       p_sequence = rep(0,m)
       quantile_v = quantile(z,1-(i*q)/(m))
       for (j in 1:m){
-        p_sequence[j] = (quantile_v - alpha*lambda*sum(pen_v[(num_vars - group.sizes[j] + 1):num_vars]))/((1-alpha)*lambda*group.sizes[j])   # pick last few penalties 
+        p_sequence[j] = (quantile_v - alpha*lambda*sum(pen_v[(num_vars - group.sizes[j] + 1):num_vars]))/((1-alpha)*lambda*group.sizes[j])   # pick last few penalties
     }
     lambda.max[i] <- max(0,max(p_sequence))
 }
   return(lambda.max)
-} 
-
-run_atos_log_inter <- function(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, step_size, x0, z, u,
-                          pen_slope, pen_gslope, f, f_grad,f_opts, f_grad_opts, crossprod_mat,verbose,groups_pen){
-  # set values
-  wt = as.numeric(sqrt(rep(table(groups),table(groups)))) # Adjust for group weights
-  inv_wt = 1/wt
-  group_ids = getGroupID(groups) 
-  group_ids_pen = getGroupID(groups_pen)
-  len_each_grp = sapply(group_ids, length)
-  wt_per_grp = sqrt(len_each_grp)
-  wt_per_grp = wt_per_grp[names(group_ids)]
-  if (is.null(x0)) {x0 = rep(0,num_vars)}
-  num_groups = length(unique(groups))
-  success = 0 # checks whether convergence happened
-  LS_EPS = .Machine$double.eps # R accuracy
-
-  # initial fitting values
-  step_size = 1/init_lipschitz(f=f,f_grad=f_grad, x0=x0, f_opts = f_opts, f_grad_opts = f_grad_opts)
-  prox_input = x0*wt
-  z = proxGroupSortedL1(y=prox_input[-1], lambda=pen_gslope*step_size,group=groups_pen,group_id=group_ids_pen)
-  z = c(prox_input[1],z)
-  z = inv_wt*z
-  fz = f(y=y, X=X, input = z, num_obs = num_obs)
-  grad_fz = f_grad(y=y, X=X, input = z, num_obs = num_obs) # loss gradient at z
-  if (is.null(u)) {u= rep(0,num_vars)}
-  prox_input = z - (step_size * (grad_fz)) 
-  x = sortedL1Prox(x=prox_input[-1],lambda=pen_slope*step_size)
-  x = c(prox_input[1],x)
-  # fitting
-  for (it in 1:max_iter){
-    fz = f(y=y, X=X, input = z, num_obs = num_obs)
-    grad_fz = f_grad(y=y, X=X, input =z, num_obs = num_obs)
-    prox_input = z - (step_size * (u + (grad_fz))) 
-    x = sortedL1Prox(x=prox_input[-1],lambda=pen_slope*step_size)
-    x = c(prox_input[1],x)
-    incr = x - z
-    norm_incr = norm(incr,type="2")
-    if (norm_incr > 1e-7){
-      for (it_ls in 1:max_iter_backtracking){ # Line search
-        prox_input = z - (step_size * (u + (grad_fz)))
-        x = sortedL1Prox(x=prox_input[-1],lambda=pen_slope*step_size)
-        x = c(prox_input[1],x)
-        incr = x - z
-        norm_incr = norm(incr,type="2")
-        rhs = fz + crossprod_mat(grad_fz,incr) + (norm_incr ^ 2) / (2 * step_size)
-        ls_tol = f(y=y, X=X, input = x, num_obs = num_obs) - rhs        
-        if (as.numeric(ls_tol) <= as.numeric(LS_EPS)){
-          break
-        }
-        else {
-          step_size = step_size*backtracking 
-        }
-      }
-    }     
-    prox_input = wt*x + (step_size/wt)*u
-    z = proxGroupSortedL1(y=prox_input[-1], lambda=pen_gslope*step_size,group=groups_pen,group_id=group_ids_pen)
-    z = c(prox_input[1],z)
-    z = z*inv_wt
-    u = u + (x - z) / step_size
-
-    certificate = norm_incr / step_size
-
-    if (certificate < tol){ # Check for convergence
-      success = 1
-      break
-    }
-  if (verbose==TRUE){print(paste0("Iteration: ", it,"/",max_iter, " done"))}
-  }
-out=c()
-out$x = x
-out$u = u
-out$z = z
-out$success = success
-out$certificate = certificate
-out$it = it
-return(out)
-}
-
-run_atos <- function(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, step_size, x0, z, u,
-                          pen_slope, pen_gslope, f, f_grad, f_opts, f_grad_opts, crossprod_mat,verbose){
-  # set values
-  wt = as.numeric(sqrt(rep(table(groups),table(groups)))) # Adjust for group weights
-  inv_wt = 1/wt
-  group_ids = getGroupID(groups) 
-  len_each_grp = sapply(group_ids, length)
-  wt_per_grp = sqrt(len_each_grp)
-  wt_per_grp = wt_per_grp[names(group_ids)]
-  if (is.null(x0)) {x0 = rep(0,num_vars)}
-  num_groups = length(unique(groups))
-  success = 0 # checks whether convergence happened
-  LS_EPS = .Machine$double.eps # R accuracy
-
-  # initial fitting values
-  step_size = 1/init_lipschitz(f=f,f_grad=f_grad, x0=x0, f_opts = f_opts, f_grad_opts = f_grad_opts)
-  z = proxGroupSortedL1(y=x0*wt, lambda=pen_gslope*step_size,group=groups,group_id=group_ids)
-  z = inv_wt*z
-  fz = f(y=y, X=X, input = z, num_obs = num_obs)
-  grad_fz = f_grad(y=y, X=X, input = z, num_obs = num_obs) # loss gradient at z
-  if (is.null(u)) {u= rep(0,num_vars)}
-  x = sortedL1Prox(x=z - (step_size * (grad_fz)) ,lambda=pen_slope*step_size)
-
-  # fitting
-  for (it in 1:max_iter){
-    fz = f(y=y, X=X, input = z, num_obs = num_obs)
-    grad_fz = f_grad(y=y, X=X, input =z, num_obs = num_obs)
-    x = sortedL1Prox(x=z - (step_size * (u + (grad_fz))) ,lambda=pen_slope*step_size)
-    incr = x - z
-    norm_incr = norm(incr,type="2")
-    if (norm_incr > 1e-7){
-      for (it_ls in 1:max_iter_backtracking){ # Line search
-        x = sortedL1Prox(x=z - (step_size * (u + (grad_fz))) ,lambda=pen_slope*step_size)
-        incr = x - z
-        norm_incr = norm(incr,type="2")
-        rhs = fz + crossprod_mat(grad_fz,incr) + (norm_incr ^ 2) / (2 * step_size)
-        ls_tol = f(y=y, X=X, input = x, num_obs = num_obs) - rhs        
-        if (as.numeric(ls_tol) <= as.numeric(LS_EPS)){
-          break
-        }
-        else {
-          step_size = step_size*backtracking 
-        }
-      }
-    }     
-
-    z = proxGroupSortedL1(y=wt*x + (step_size/wt)*u, lambda=pen_gslope*step_size,group=groups,group_id=group_ids)
-    z = z*inv_wt
-    u = u + (x - z) / step_size
-
-    certificate = norm_incr / step_size
-
-    if (certificate < tol){ # Check for convergence
-      success = 1
-      break
-    }
-  if (verbose==TRUE){print(paste0("Iteration: ", it,"/",max_iter, " done"))}
-  }
-out=c()
-out$x = x
-out$u = u
-out$z = z
-out$success = success
-out$certificate = certificate
-out$it = it
-return(out)
 }

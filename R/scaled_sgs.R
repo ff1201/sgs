@@ -20,41 +20,40 @@
 
 #' fits a scaled SGS model
 #'
-#' Fits an SGS model using the noise estimation procedure (Algorithm 5 from Bogdan). This estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to cross-validation ([fit_sgs_cv()]).
+#' Fits an SGS model using the noise estimation procedure (Algorithm 5 from Bogdan et. al. (2015)). This estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to cross-validation ([fit_sgs_cv()]).
 #'
-#' @param X Input matrix of dimensions \eqn{p \times n}.
-#' @param y Output vector of dimension \eqn{n}.
+#' @param X Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).
+#' @param y Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.
 #' @param groups A grouping structure for the input data. Should take the form of a vector of group indices.
-#' @param type The type of regression to perform. Supported values are: "linear" and "logistic".
+#' @param type The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.
 #' @param pen_method The type of penalty sequences to use.
-#'   - `1` uses the vMean SGS and gMean gSLOPE sequences. 
-#'   - `2` uses the vMax SGS and gMean gSLOPE sequences.
-#'   - `3` uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
-#' @param alpha The value of \eqn{\alpha}, defines the convex balance between SLOPE and gSLOPE.
-#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties.
-#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties.
-#' @param standardise Type of standardisation. 
-#'   - `l2` standardises the input data to have \eqn{\ell_2} norms of one.
-#'   - `l1` standardises the input data to have \eqn{\ell_1} norms of one.
-#'   - `sd` standardises the input data to have standard deviation of one.
-#'   - `none` no standardisation applied.
+#'   - \code{"1"} uses the vMean SGS and gMean gSLOPE sequences. 
+#'   - \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
+#'   - \code{"1"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
+#' @param alpha The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.
+#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties. Must be between 0 and 1.
+#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties. Must be between 0 and 1.
+#' @param standardise Type of standardisation to perform on \code{X}: 
+#'   - \code{"l2"} standardises the input data to have \eqn{\ell_2} norms of one.
+#'   - \code{"l1"} standardises the input data to have \eqn{\ell_1} norms of one.
+#'   - \code{"sd"} standardises the input data to have standard deviation of one.
+#'   - \code{"none"} no standardisation applied.
 #' @param intercept Logical flag for whether to fit an intercept.
 #' @param verbose Logical flag for whether to print fitting information.
 #' 
-#' @return An object of type `"sgs"` containing model fit information.
+#' @return An object of type \code{"sgs"} containing model fit information (see [fit_sgs()]). 
 #'
 #' @examples
 #' # specify a grouping structure
-#' groups = c(rep(1:20, each=3),
-#'           rep(21:40, each=4),
-#'           rep(41:60, each=5),
-#'           rep(61:80, each=6),
-#'           rep(81:100, each=7))
+#' groups = c(rep(1:3, each=3),
+#'            rep(4:10, each=4),
+#'            rep(11:13, each=5),
+#'            rep(14:21, each=6))
 #' # generate data
-#' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+#' data = generate_toy_data(p=100, n=90, groups = groups, seed_id=3,signal_mean = 10)
 #' # run noise estimation 
-#' model = noise_estimation(X=data$X, y=data$y, groups=groups)
-#' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+#' model = scaled_sgs(X=data$X, y=data$y, groups=groups,pen_method=1)
+#' @references M. Bogdan, E. Van den Berg, C. Sabatti, W. Su, E. Candes (2015) \emph{SLOPE — Adaptive variable selection via convex optimization}, \url{https://projecteuclid.org/journals/annals-of-applied-statistics/volume-9/issue-3/SLOPEAdaptive-variable-selection-via-convex-optimization/10.1214/15-AOAS842.full}
 #' @export
 
 scaled_sgs <- function(X, y, groups, type="linear", pen_method = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise="l2", intercept=TRUE, verbose=FALSE){
@@ -66,7 +65,7 @@ scaled_sgs <- function(X, y, groups, type="linear", pen_method = 1, alpha=0.95, 
       } else {
         selected <- integer(0)
       }
-
+      num_obs=dim(X)[1]
       out=standardise_sgs(X=X,y=y,standardise,intercept,dim(X)[1])
       attempts = 0
       repeat {
@@ -88,7 +87,7 @@ scaled_sgs <- function(X, y, groups, type="linear", pen_method = 1, alpha=0.95, 
           break
         }
 
-        if (length(selected) + 1 >= n) {
+        if (length(selected) + 1 >= num_obs) {
           stop("selected >= n-1 variables; cannot estimate variance")
         }
     }  

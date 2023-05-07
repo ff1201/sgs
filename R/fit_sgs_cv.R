@@ -20,47 +20,47 @@
 
 #' fit an SGS model using CV
 #'
-#' Function to fit a pathwise solution of SGS models using k-fold cross-validation.
+#' Function to fit a pathwise solution of SGS models using k-fold cross-validation. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
 #'
-#' Fits SGS models under a pathwise solution using ATOS, picking the 1se model as optimum. An example fit is given. Warm starts are implemented.
+#' Fits SGS models under a pathwise solution using ATOS, picking the 1se model as optimum. Warm starts are implemented.
 #'
-#' @param X Input matrix of dimensions \eqn{p \times n}.
-#' @param y Output vector of dimension \eqn{n}.
+#' @param X Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).
+#' @param y Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.
 #' @param groups A grouping structure for the input data. Should take the form of a vector of group indices.
-#' @param pen_method The type of penalty sequences to use.
-#'   - `1` uses the vMean SGS and gMean gSLOPE sequences. 
-#'   - `2` uses the vMax SGS and gMean gSLOPE sequences.
-#'   - `3` uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
-#' @param type The type of regression to perform. Supported values are: "linear" and "logistic".
+#' @param pen_method The type of penalty sequences to use (see Feser et. al. (2023)):
+#'   - \code{"1"} uses the vMean SGS and gMean gSLOPE sequences. 
+#'   - \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
+#'   - \code{"3"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
+#' @param type The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.
 #' @param nlambda The number of pathwise \eqn{\lambda} values to fit.
 #' @param nfolds The number of folds to use in cross-validation.
-#' @param alpha The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE.
-#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties.
-#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties.
+#' @param alpha The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.
+#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties. Must be between 0 and 1.
+#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties. Must be between 0 and 1.
 #' @param max_iter Maximum number of ATOS iterations to perform. 
-#' @param backtracking The backtracking parameter, as defined in Pedregosa et. al. (2018) as \eqn{\tau}.
+#' @param backtracking The backtracking parameter, \eqn{\tau}, as defined in Pedregosa et. al. (2018).
 #' @param max_iter_backtracking Maximum number of backtracking line search iterations to perform per global iteration.
-#' @param tol Convergence threshold for the stopping criteria.
+#' @param tol Convergence tolerance for the stopping criteria.
 #' @param min_frac Defines the termination point of the pathwise solution, so that \eqn{\lambda_\text{min} = min_frac \cdot \lambda_\text{max}}.
-#' @param standardise Type of standardisation. 
-#'   - `l2` standardises the input data to have \eqn{\ell_2} norms of one. Internally, \eqn{\lambda} is scaled by \eqn{1/\sqrt{n}}.
-#'   - `l1` standardises the input data to have \eqn{\ell_1} norms of one. Internally, \eqn{\lambda} is scaled by \eqn{1/n}.
-#'   - `sd` standardises the input data to have standard deviation of one.
-#'   - `none` no standardisation applied.
+#' @param standardise Type of standardisation to perform on \code{X}: 
+#'   - \code{"l2"} standardises the input data to have \eqn{\ell_2} norms of one.
+#'   - \code{"l1"} standardises the input data to have \eqn{\ell_1} norms of one.
+#'   - \code{"sd"} standardises the input data to have standard deviation of one.
+#'   - \code{"none"} no standardisation applied.
 #' @param intercept Logical flag for whether to fit an intercept.
 #' @param verbose Logical flag for whether to print fitting information.
 #' @param v_weights Optional vector for the variable penalty weights. Overrides the penalties from pen_method if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}
 #' @param w_weights Optional vector for the group penalty weights. Overrides the penalties from pen_method if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}
-#' @param error_criteria The criteria used to discriminate between models along the path. Supported values are: "mse" (mean squared error) and "mae" (mean absolute error).
-#' @param max_lambda Optional parameter, which is the value of \eqn{\lambda_\text{max}}, which is used to fit the first model on the path. If not specificed, it is chosen to give the null model. 
+#' @param error_criteria The criteria used to discriminate between models along the path. Supported values are: \code{"mse"} (mean squared error) and \code{"mae"} (mean absolute error).
+#' @param max_lambda Optional parameter, \eqn{\lambda_\text{max}}, which is used to fit the first model on the path. If not specificed, it is chosen to be just above the value which lets in the first variable (so that it is the null model). 
 #'
 #' @return A list containing:
-#' item{all_models}{A list of all the models fitted along the path.}
-#' item{fit}{The 1se chosen model, which is a `"sgs"` object type.}
-#' item{best_lambda}{The value of \eqn{\lambda} which generated the chosen model.}
-#' item{best_lambda_id}{The path index for the chosen model.}
-#' item{errors}{A table containing fitting information about the models on the path.}
-#' item{type}{Indicates which type of regression was performed.}
+#' \item{all_models}{A list of all the models fitted along the path.}
+#' \item{fit}{The 1se chosen model, which is a \code{"sgs"} object type.}
+#' \item{best_lambda}{The value of \eqn{\lambda} which generated the chosen model.}
+#' \item{best_lambda_id}{The path index for the chosen model.}
+#' \item{errors}{A table containing fitting information about the models on the path.}
+#' \item{type}{Indicates which type of regression was performed.}
 #'
 #' @examples
 #' # specify a grouping structure
@@ -72,8 +72,11 @@
 #' # generate data
 #' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
 #' # run SGS with cross-validation (the proximal functions can be found in utils.R)
-#' cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
+#' cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", 
+#' nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, 
+#' standardise="l2",intercept=TRUE,verbose=TRUE)
 #' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+#' @references F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 #' @export
 
 #source("fit_sgs.R")
@@ -117,8 +120,12 @@ fit_sgs_cv = function(X,y,groups,pen_method=1, type = "linear", nlambda = 20, nf
   all_errors = matrix(0,nrow=nlambda,ncol=nfolds)
   output_errors = data.frame(lambda=lambdas,error_criteria=rep(0,nlambda), num_non_zero = rep(0,nlambda))
   ## warm starts
-  initial_x = rep(0,num_vars)
-  initial_u = rep(0,num_vars)
+  if (type=="logistic" & intercept){    
+    initial_x = rep(0,num_vars+1)
+    initial_u = rep(0,num_vars+1)
+  } else {  
+    initial_x = rep(0,num_vars)
+    initial_u = rep(0,num_vars)}
 
   list_of_models = list()
   
@@ -144,18 +151,18 @@ fit_sgs_cv = function(X,y,groups,pen_method=1, type = "linear", nlambda = 20, nf
       if (type=="linear"){
       if (intercept){
         if (error_criteria == "mse"){
-          error_val = sum((Test_y-arma_mm(cbind(1,Test_X),as.vector(model$beta)))^2)}
-          else if (error_criteria == "mae") {error_val = sum(abs(Test_y-arma_mm(cbind(1,Test_X),as.vector(model$beta))))} else{stop("not a valid criteria")}
+          error_val = sum((Test_y-arma_mv(cbind(1,Test_X),as.vector(model$beta)))^2)}
+          else if (error_criteria == "mae") {error_val = sum(abs(Test_y-arma_mv(cbind(1,Test_X),as.vector(model$beta))))} else{stop("not a valid criteria")}
       } else {
         if (error_criteria == "mse"){
-          error_val = sum((Test_y-arma_mm(Test_X,as.vector(model$beta)))^2)
-          } else if (error_criteria =="mae"){error_val = sum(abs(Test_y-arma_mm(Test_X,as.vector(model$beta))))} else {stop("not a valid criteria")}
+          error_val = sum((Test_y-arma_mv(Test_X,as.vector(model$beta)))^2)
+          } else if (error_criteria =="mae"){error_val = sum(abs(Test_y-arma_mv(Test_X,as.vector(model$beta))))} else {stop("not a valid criteria")}
       }
       } else if (type=="logistic"){
         if (intercept){
-          error_val = 1-sum(ifelse(sigmoid(arma_mm(cbind(1,Test_X),as.vector(model$beta)))>=0.5,1,0) == Test_y)/length(Test_y)
+          error_val = 1-sum(ifelse(sigmoid(arma_mv(cbind(1,Test_X),as.vector(model$beta)))>=0.5,1,0) == Test_y)/length(Test_y)
         } else {
-          error_val = 1-sum(ifelse(sigmoid(arma_mm(Test_X,as.vector(model$beta)))>=0.5,1,0) == Test_y)/length(Test_y)
+          error_val = 1-sum(ifelse(sigmoid(arma_mv(Test_X,as.vector(model$beta)))>=0.5,1,0) == Test_y)/length(Test_y)
         }
       }
       all_errors[lambda_id, fold_id] = error_val

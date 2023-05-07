@@ -22,46 +22,47 @@
 #'
 #' Function for fitting ATOS with general convex penalties. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
 #'
-#' `ATOS()` solves convex minimization problems of the form
+#' \code{atos()} solves convex minimization problems of the form
 #' \deqn{
 #'   \min_{x \in \mathbb{R}^p} f(x) + g(x) + h(x),
 #' }
 #' where \eqn{f} is convex and differentiable with \eqn{L_f}-Lipschitz gradient, and \eqn{g} and \eqn{h} are both convex.
 #' The algorithm is not symmetrical, but usually the difference between variations are only small numerical values, which are filtered out.
-#' However, both variations should be checked regardless. An example for the sparse-group lasso (SGL) is given. 
+#' However, both variations should be checked regardless, by looking at \code{x} and \code{u}. An example for the sparse-group lasso (SGL) is given. 
 #'
-#' @param X Input matrix of dimensions \eqn{p \times n}.
-#' @param y Output vector of dimension \eqn{n}.
-#' @param type The type of regression to perform. Supported values are: "linear" and "logistic".
-#' @param prox_1 The proximal operator for the first function (\eqn{h(x)}).
-#' @param prox_2 The proximal operator for the second function (\eqn{g(x)}).
-#' @param pen_prox_1 The penalty for the first proximal operator. For the lasso, this would be \eqn{\lambda}. If operator does not include a penalty, set to 1.
+#' @param X Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package)
+#' @param y Output vector of dimension \eqn{n}. For \code{type="linear"} needs to be continuous and for \code{type="logistic"} needs to be a binary variable.
+#' @param type The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.
+#' @param prox_1 The proximal operator for the first function, \eqn{h(x)}.
+#' @param prox_2 The proximal operator for the second function, \eqn{g(x)}.
+#' @param pen_prox_1 The penalty for the first proximal operator. For the lasso, this would be the sparsity parameter, \eqn{\lambda}. If operator does not include a penalty, set to 1.
 #' @param pen_prox_2 The penalty for the second proximal operator. 
-#' @param prox_1_opts Optional arguments for first proximal operator. For the group lasso, this would be a vector of group IDs. Note: this must be inserted as a list.
-#' @param prox_2_opts Optional arguments for second proximal operator. 
+#' @param prox_1_opts Optional argument for first proximal operator. For the group lasso, this would be the group IDs. Note: this must be inserted as a list.
+#' @param prox_2_opts Optional argument for second proximal operator. 
 #' @param max_iter Maximum number of ATOS iterations to perform. 
-#' @param backtracking The backtracking parameter, as defined in Pedregosa et. al. (2018) as \eqn{\tau}.
+#' @param backtracking The backtracking parameter, \eqn{\tau}, as defined in Pedregosa et. al. (2018).
 #' @param max_iter_backtracking Maximum number of backtracking line search iterations to perform per global iteration.
-#' @param tol Convergence threshold for the stopping criteria.
-#' @param standardise Type of standardisation. 
-#'   - `l2` standardises the input data to have \eqn{\ell_2} norms of one.
-#'   - `l1` standardises the input data to have \eqn{\ell_1} norms of one.
-#'   - `sd` standardises the input data to have standard deviation of one.
-#'   - `none` no standardisation applied.
+#' @param tol Convergence tolerance for the stopping criteria.
+#' @param standardise Type of standardisation to perform on \code{X}: 
+#'   - \code{"l2"} standardises the input data to have \eqn{\ell_2} norms of one.
+#'   - \code{"l1"} standardises the input data to have \eqn{\ell_1} norms of one.
+#'   - \code{"sd"} standardises the input data to have standard deviation of one.
+#'   - \code{"none"} no standardisation applied.
 #' @param intercept Logical flag for whether to fit an intercept.
-#' @param x0 Optional initial vector for x_0.
-#' @param u Optional initial vector for u.
+#' @param x0 Optional initial vector for \eqn{x_0}.
+#' @param u Optional initial vector for \eqn{u}.
 #' @param verbose Logical flag for whether to print fitting information.
 #'
-#' @return A list containing:
-#' item{beta}{The fitted values from the regression.}
-#' item{x}{The solution to the OPT (See Pedregosa et. al. (2018))}
-#' item{u}{The solution to the dual problem (See Pedregosa et. al. (2018))}
-#' item{z}{The updated values from applying the first proximal operator. (See Pedregosa et. al. (2018))}
-#' item{success}{Logical flag indicating whether ATOS converged, according to item{tol}.}
-#' item{num_it}{Number of iterations performed. If convergence is not reached, this will be item{max_iter}.}
-#' item{certificate}{Final value of convergence criteria.}
-#' item{intercept}{Logical flag indicating whether an intercept was fit.}
+#' @return An object of class \code{"atos"} containing:
+#' \item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{u}, which is usually the former.}
+#' \item{x}{The solution to the original problem (see Pedregosa et. al. (2018)).}
+#' \item{u}{The solution to the dual problem (see Pedregosa et. al. (2018)).}
+#' \item{z}{The updated values from applying the first proximal operator (see Pedregosa et. al. (2018)).}
+#' \item{type}{Indicates which type of regression was performed.}
+#' \item{success}{Logical flag indicating whether ATOS converged, according to \code{tol}.}
+#' \item{num_it}{Number of iterations performed. If convergence is not reached, this will be \code{max_iter}.}
+#' \item{certificate}{Final value of convergence criteria.}
+#' \item{intercept}{Logical flag indicating whether an intercept was fit.}
 #'
 #' @examples
 #' # specify a grouping structure
@@ -70,10 +71,28 @@
 #'           rep(41:60, each=5),
 #'           rep(61:80, each=6),
 #'           rep(81:100, each=7))
+#' # define proximal operators
+#' L1_prox <- function(input, lambda){ # Lasso proximal operator
+#'  out = sign(input) * pmax(0, abs(input) - lambda)
+#'  return(out)
+#' }
+#' group_L1_prox = function(input,lambda,group_info){ 
+#'  n_groups = length(unique(group_info))
+#'  out = rep(0,length(input))
+#'  for (i in 1:n_groups){
+#'    grp_idx = which(group_info == unique(group_info)[i])
+#'    if (lambda == 0 & norm(input[grp_idx],type="2") == 0){ # 0/0 = 0
+#'      out[grp_idx] = 0
+#'    } else {
+#'      out[grp_idx] = max((1-(lambda/norm(input[grp_idx],type="2"))),0) * input[grp_idx]}
+#'  }
+#'  return(out)
+#' }
 #' # generate data
 #' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
 #' # run atos (the proximal functions can be found in utils.R)
-#' out = atos(X=data$X, y=data$y, type="linear", prox_1 = L1_prox, prox_2 = group_L1_prox, standardise="none", intercept=FALSE, prox_2_opts = list(groups))
+#' out = atos(X=data$X, y=data$y, type="linear", prox_1 = L1_prox, prox_2 = group_L1_prox, 
+#' standardise="none", intercept=FALSE, prox_2_opts = list(groups))
 #' @references F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 #' @export
 
@@ -97,7 +116,12 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
   if (length(y) != nrow(X)) {
     stop("the number of samples in y must match the number of rows in X")
   }
-
+  if (type == "logistic" & !is.binary(y)){
+    stop("when using logistic regression the response, y, needs to be a binary variable")
+  }
+  if (type == "linear" & is.binary(y)){
+    stop("using a binary variable with linear regression. use logistic instead")
+  }
   # -------------------------------------------------------------
   # pre-process data
   # ------------------------------------------------------------- 
@@ -139,7 +163,6 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
   # set values
   # ------------------------------------------------------------- 
   if (is.null(x0)) {x0 = rep(0,num_vars)}
-  num_groups = length(unique(groups))
   success = 0 # checks whether convergence happened
   LS_EPS = .Machine$double.eps # R accuracy
 
@@ -241,7 +264,7 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
     if (min(abs(out$beta[out$beta!=0])) < 1e-3){ # remove small resid values if solution not stable
       threshold_x = quantile(abs(out$beta[which(abs(out$beta)>(1e-4))]))[4]*1e-3
       threshold_x = quantile(abs(out$beta[which(abs(out$beta)>=threshold_x)]))[4]*1e-2
-      if (!is.na(threshold_x) & lambda_org!=0) { # When lambda = 0, we don't want to remove small values, as no penalisation is occuring
+      if (!is.na(threshold_x) & !(pen_prox_1==0 & pen_prox_2==0)){ # When lambda = 0, we don't want to remove small values, as no penalisation is occuring
         threshold_x = ifelse(threshold_x>1e-2,1e-2, threshold_x) # if threshold too big, set to 1e-2 
         out$beta = ifelse(abs(out$beta)>threshold_x,out$beta,0)
         out$beta = as.matrix(out$beta)

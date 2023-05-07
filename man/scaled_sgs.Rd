@@ -19,33 +19,33 @@ scaled_sgs(
 )
 }
 \arguments{
-\item{X}{Input matrix of dimensions \eqn{p \times n}.}
+\item{X}{Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).}
 
-\item{y}{Output vector of dimension \eqn{n}.}
+\item{y}{Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.}
 
 \item{groups}{A grouping structure for the input data. Should take the form of a vector of group indices.}
 
-\item{type}{The type of regression to perform. Supported values are: "linear" and "logistic".}
+\item{type}{The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.}
 
 \item{pen_method}{The type of penalty sequences to use.
 \itemize{
-\item \code{1} uses the vMean SGS and gMean gSLOPE sequences.
-\item \code{2} uses the vMax SGS and gMean gSLOPE sequences.
-\item \code{3} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
+\item \code{"1"} uses the vMean SGS and gMean gSLOPE sequences.
+\item \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
+\item \code{"1"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
 }}
 
-\item{alpha}{The value of \eqn{\alpha}, defines the convex balance between SLOPE and gSLOPE.}
+\item{alpha}{The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.}
 
-\item{vFDR}{Defines the desired variable FDR level, which determines the shape of the variable penalties.}
+\item{vFDR}{Defines the desired variable FDR level, which determines the shape of the variable penalties. Must be between 0 and 1.}
 
-\item{gFDR}{Defines the desired group FDR level, which determines the shape of the group penalties.}
+\item{gFDR}{Defines the desired group FDR level, which determines the shape of the group penalties. Must be between 0 and 1.}
 
-\item{standardise}{Type of standardisation.
+\item{standardise}{Type of standardisation to perform on \code{X}:
 \itemize{
-\item \code{l2} standardises the input data to have \eqn{\ell_2} norms of one.
-\item \code{l1} standardises the input data to have \eqn{\ell_1} norms of one.
-\item \code{sd} standardises the input data to have standard deviation of one.
-\item \code{none} no standardisation applied.
+\item \code{"l2"} standardises the input data to have \eqn{\ell_2} norms of one.
+\item \code{"l1"} standardises the input data to have \eqn{\ell_1} norms of one.
+\item \code{"sd"} standardises the input data to have standard deviation of one.
+\item \code{"none"} no standardisation applied.
 }}
 
 \item{intercept}{Logical flag for whether to fit an intercept.}
@@ -53,23 +53,22 @@ scaled_sgs(
 \item{verbose}{Logical flag for whether to print fitting information.}
 }
 \value{
-An object of type \code{"sgs"} containing model fit information.
+An object of type \code{"sgs"} containing model fit information (see \code{\link[=fit_sgs]{fit_sgs()}}).
 }
 \description{
-Fits an SGS model using the noise estimation procedure (Algorithm 5 from Bogdan). This estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to cross-validation (\code{\link[=fit_sgs_cv]{fit_sgs_cv()}}).
+Fits an SGS model using the noise estimation procedure (Algorithm 5 from Bogdan et. al. (2015)). This estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to cross-validation (\code{\link[=fit_sgs_cv]{fit_sgs_cv()}}).
 }
 \examples{
 # specify a grouping structure
-groups = c(rep(1:20, each=3),
-          rep(21:40, each=4),
-          rep(41:60, each=5),
-          rep(61:80, each=6),
-          rep(81:100, each=7))
+groups = c(rep(1:3, each=3),
+           rep(4:10, each=4),
+           rep(11:13, each=5),
+           rep(14:21, each=6))
 # generate data
-data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+data = generate_toy_data(p=100, n=90, groups = groups, seed_id=3,signal_mean = 10)
 # run noise estimation 
-model = noise_estimation(X=data$X, y=data$y, groups=groups)
+model = scaled_sgs(X=data$X, y=data$y, groups=groups,pen_method=1)
 }
 \references{
-F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+M. Bogdan, E. Van den Berg, C. Sabatti, W. Su, E. Candes (2015) \emph{SLOPE — Adaptive variable selection via convex optimization}, \url{https://projecteuclid.org/journals/annals-of-applied-statistics/volume-9/issue-3/SLOPEAdaptive-variable-selection-via-convex-optimization/10.1214/15-AOAS842.full}
 }

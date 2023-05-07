@@ -31,7 +31,8 @@ groups = c(rep(1:20, each=3),
 # generate data
 data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
 # run SGS 
-model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
+model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
+vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 # use predict function
 model_predictions = predict(model, predict_X = data$X)
 }

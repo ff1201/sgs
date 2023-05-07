@@ -28,50 +28,50 @@ fit_sgs(
 )
 }
 \arguments{
-\item{X}{Input matrix of dimensions \eqn{p \times n}.}
+\item{X}{Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).}
 
-\item{y}{Output vector of dimension \eqn{n}.}
+\item{y}{Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.}
 
 \item{groups}{A grouping structure for the input data. Should take the form of a vector of group indices.}
 
-\item{pen_method}{The type of penalty sequences to use.
+\item{pen_method}{The type of penalty sequences to use (see Feser et. al. (2023)):
 \itemize{
-\item \code{1} uses the vMean SGS and gMean gSLOPE sequences.
-\item \code{2} uses the vMax SGS and gMean gSLOPE sequences.
-\item \code{3} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
+\item \code{"1"} uses the vMean SGS and gMean gSLOPE sequences.
+\item \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
+\item \code{"3"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
 }}
 
-\item{type}{The type of regression to perform. Supported values are: "linear" and "logistic".}
+\item{type}{The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.}
 
-\item{lambda}{The value of \eqn{\lambda}, which defines the level of sparsity in the model. Can be picked using cross-validation (see fit_sgs_cv)}
+\item{lambda}{The value of \eqn{\lambda}, which defines the level of sparsity in the model. Can be picked using cross-validation (see \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}). Must be a positive value.}
 
-\item{alpha}{The value of \eqn{\alpha}, defines the convex balance between SLOPE and gSLOPE.}
+\item{alpha}{The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.}
 
-\item{vFDR}{Defines the desired variable FDR level, which determines the shape of the variable penalties.}
+\item{vFDR}{Defines the desired variable FDR level, which determines the shape of the variable penalties. Must be between 0 and 1.}
 
-\item{gFDR}{Defines the desired group FDR level, which determines the shape of the group penalties.}
+\item{gFDR}{Defines the desired group FDR level, which determines the shape of the group penalties. Must be between 0 and 1.}
 
 \item{max_iter}{Maximum number of ATOS iterations to perform.}
 
-\item{backtracking}{The backtracking parameter, as defined in Pedregosa et. al. (2018) as \eqn{\tau}.}
+\item{backtracking}{The backtracking parameter, \eqn{\tau}, as defined in Pedregosa et. al. (2018).}
 
 \item{max_iter_backtracking}{Maximum number of backtracking line search iterations to perform per global iteration.}
 
-\item{tol}{Convergence threshold for the stopping criteria.}
+\item{tol}{Convergence tolerance for the stopping criteria.}
 
-\item{standardise}{Type of standardisation.
+\item{standardise}{Type of standardisation to perform on \code{X}:
 \itemize{
-\item \code{l2} standardises the input data to have \eqn{\ell_2} norms of one.
-\item \code{l1} standardises the input data to have \eqn{\ell_1} norms of one.
-\item \code{sd} standardises the input data to have standard deviation of one.
-\item \code{none} no standardisation applied.
+\item \code{"l2"} standardises the input data to have \eqn{\ell_2} norms of one.
+\item \code{"l1"} standardises the input data to have \eqn{\ell_1} norms of one.
+\item \code{"sd"} standardises the input data to have standard deviation of one.
+\item \code{"none"} no standardisation applied.
 }}
 
 \item{intercept}{Logical flag for whether to fit an intercept.}
 
-\item{w_weights}{Optional vector for the group penalty weights. Overrides the penalties from pen_method if specified.}
+\item{w_weights}{Optional vector for the group penalty weights. Overrides the penalties from \code{pen_method} if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.}
 
-\item{v_weights}{Optional vector for the variable penalty weights. Overrides the penalties from pen_method if specified.}
+\item{v_weights}{Optional vector for the variable penalty weights. Overrides the penalties from \code{pen_method} if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.}
 
 \item{x0}{Optional initial vector for \eqn{x_0}.}
 
@@ -81,24 +81,42 @@ fit_sgs(
 }
 \value{
 A list containing:
-item{beta}{The fitted values from the regression.}
-item{x}{The solution to the OPT (See Pedregosa et. al. (2018))}
-item{u}{The solution to the dual problem (See Pedregosa et. al. (2018))}
-item{z}{The updated values from applying the first proximal operator. (See Pedregosa et. al. (2018))}
-item{type}{Indicates which type of regression was performed.}
-item{pen_slope}{Vector of the variable penalty sequence.}
-item{pen_gslope}{Vector of the group penalty sequence.}
-item{lambda}{Value of \eqn{\lambda} used to fit the model.}
-item{success}{Logical flag indicating whether ATOS converged, according to item{tol}.}
-item{num_it}{Number of iterations performed. If convergence is not reached, this will be item{max_iter}.}
-item{certificate}{Final value of convergence criteria.}
-item{intercept}{Logical flag indicating whether an intercept was fit.}
+\item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{u}, which is usually the former.}
+\item{x}{The solution to the original problem (see Pedregosa et. al. (2018)).}
+\item{u}{The solution to the dual problem (see Pedregosa et. al. (2018)).}
+\item{z}{The updated values from applying the first proximal operator (see Pedregosa et. al. (2018)).}
+\item{type}{Indicates which type of regression was performed.}
+\item{pen_slope}{Vector of the variable penalty sequence.}
+\item{pen_gslope}{Vector of the group penalty sequence.}
+\item{lambda}{Value of \eqn{\lambda} used to fit the model.}
+\item{success}{Logical flag indicating whether ATOS converged, according to \code{tol}.}
+\item{num_it}{Number of iterations performed. If convergence is not reached, this will be \code{max_iter}.}
+\item{certificate}{Final value of convergence criteria.}
+\item{intercept}{Logical flag indicating whether an intercept was fit.}
 }
 \description{
-Sparse-group SLOPE (SGS) main fitting function.
+Sparse-group SLOPE (SGS) main fitting function. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
 }
 \details{
-Fits SGS models using ATOS.
+\code{fit_sgs()} fits an SGS model using ATOS. SGS is a sparse-group method, so that it selects both variables and groups. Unlike group selection approaches, not every variable within a group is set as active.
+It solves the convex optimisation problem given by
+\deqn{
+  \hat{\beta}_\text{SGS} = \argmin_{b\in \mathbb{R}^p}\left\{ \frac{1}{2n}\ell (b ; y, \mathbf{X}) + \lambda \alpha \sum_{i=1}^{p}v_i |b|_{(i)} + \lambda (1-\alpha)\sum_{g=1}^{m}w_g \sqrt{p_g} \|b^{(g)}\|_2 \right\},
+}
+where \eqn{ell(\cdot)} is the loss function. In the case of the linear model, the loss function is given by the mean-squared error loss:
+\deqn{
+ \ell(b; y, \mathbf{X}) = \left\|y-\mathbf{X}b \right\|_2^2.
+}
+In the logistic model, the loss function is given by
+\deqn{
+\ell(b;y,\mathbf{X})=-1/n \log(\mathcal{L}(b; y, \mathbf{X})).
+}
+where the log-likelihood is given by
+\deqn{
+ \mathcal{L}(b; y, \mathbf{X}) = \sum_{i=1}^{n}\left\{y_i b^\intercal x_i - \log(1+\exp(b^\intercal x_i)) \right\}.
+}
+SGS can be seen to be a convex combination of SLOPE and gSLOPE, balanced through \code{alpha}, such that it reduces to SLOPE for \code{alpha = 0} and to gSLOPE for \code{alpha = 1}.
+The penalty parameters in SGS are sorted so that the largest coefficients are matched with the largest penalties, to reduce the FDR.
 }
 \examples{
 # specify a grouping structure
@@ -110,8 +128,11 @@ groups = c(rep(1:20, each=3),
 # generate data
 data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
 # run SGS 
-model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
+model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
+vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 }
 \references{
 F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+
+F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 }

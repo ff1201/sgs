@@ -1,4 +1,24 @@
-run_atos_log_inter <- function(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, step_size, x0, z, u,
+###############################################################################
+#
+#    sgs: Sparse-group SLOPE (Sparse-group Sorted L1 Penalized Estimation)
+#    Copyright (C) 2023 Fabio Feser
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+###############################################################################
+
+run_atos_log_inter <- function(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, x0, u,
                           pen_slope, pen_gslope, f, f_grad,f_opts, f_grad_opts, crossprod_mat,verbose,groups_pen){
   # set values
   wt = as.numeric(sqrt(rep(table(groups),table(groups)))) # Adjust for group weights
@@ -75,7 +95,7 @@ out$it = it
 return(out)
 }
 
-run_atos <- function(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, step_size, x0, z, u,
+run_atos <- function(y,X,num_obs, num_vars, groups, backtracking, max_iter, max_iter_backtracking, tol, x0, u,
                           pen_slope, pen_gslope, f, f_grad, f_opts, f_grad_opts, crossprod_mat,verbose){
   # set values
   wt = as.numeric(sqrt(rep(table(groups),table(groups)))) # Adjust for group weights

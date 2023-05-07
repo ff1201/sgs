@@ -18,11 +18,11 @@
 #
 ###############################################################################
 
-#' print a `"sgs"` object
+#' print a \code{"sgs"} object
 #'
 #' Performs prediction from an [fit_sgs()] model fit.
 #'
-#' @param fit Object an object of class `"sgs"` from a call to [fit_sgs()] or [fit_sgs_cv()].
+#' @param fit Object an object of class \code{"sgs"} from a call to [fit_sgs()] or [fit_sgs_cv()].
 #' @param digits Number of digits to print in output.
 #' @param ... ignored.
 #' 
@@ -41,17 +41,18 @@
 #' # generate data
 #' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
 #' # run SGS 
-#' model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
+#' model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
+#' vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 #' # print model
 #' print(model)
 #' @export
-
 print.sgs <- function(fit, digits = max(3, getOption("digits") - 3), ...){ 
   num.nonzero <- apply(fit$beta,2, function(z){sum(z != 0)})
   cat("\n regression type: ", fit$type, "\n\n")
   print(cbind(lambdas = fit$lambdas, num.nonzero = num.nonzero, convergence = fit$success))
 }
 
+#' @export
 print.sgs_cv <- function(fit, digits = max(3, getOption("digits") - 3), ...){ 
   cat("\n regression type: ", fit$type, "\n\n")
   print(cbind(lambda = fit$errors$lambda, error = fit$errors$error_criteria, estimated_non_zero = fit$errors$num_non_zero))

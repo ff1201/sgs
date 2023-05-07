@@ -1,8 +1,12 @@
 ---
-title: "SGS reproducible example"
+title: "Introducing SGS"
 output: rmarkdown::html_vignette
 author: "Fabio Feser"
 date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{Introducing SGS}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
@@ -22,9 +26,7 @@ The method is implemented in the \texttt{sgs} R package. The package has impleme
 For this example, a $400\times 500$ input matrix is used with a simple grouping structure, sampled from a multivariate Gaussian distribution with no correlation. 
 
 ```{r}
-setwd("~/Thesis/Code/sgs/R")
-source("fit_sgs_cv.R")
-source("toy_data_gen.R")
+library(sgs)
 groups = c(rep(1:20, each=3),
            rep(21:40, each=4),
            rep(41:60, each=5),
@@ -42,7 +44,7 @@ We now fit an SGS model to the data using linear regression. The SGS model has m
 model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 ```
 
-\textbf{Note}: Here, we have fit an intercept and applied $\ell_2$ standardisation. This is the recommended usage when applying SGS.
+Note: we have fit an intercept and applied $\ell_2$ standardisation. This is the recommended usage when applying SGS.
 
 ### Output of model
 
@@ -53,6 +55,28 @@ model$beta[model$selected_var+1,]
 model$group.effects[model$selected_group,]
 model$selected_var
 model$selected_group
+```
+
+Defining a function that lets us calculate various metrics (including the FDR and sensitivity):
+```{r}
+fdr_sensitivity = function(fitted_ids, true_ids,num_coef){
+  # calculates FDR, FPR, and sensitivity
+  num_true = length(intersect(fitted_ids,true_ids))
+  num_false = length(fitted_ids) - num_true
+  num_missed = length(true_ids) - num_true
+  num_true_negatives = num_coef - length(true_ids)
+  out=c()
+  out$fdr = num_false / (num_true + num_false)
+  if (is.nan(out$fdr)){out$fdr = 0}
+  out$sensitivity = num_true / length(true_ids)
+  if (length(true_ids) == 0){
+    out$sensitivity = 1
+  }
+  out$fpr = num_false / num_true_negatives
+  out$f1 = (2*num_true)/(2*num_true + num_false + num_missed)
+  if (is.nan(out$f1)){out$f1 = 1}
+  return(out)
+}
 ```
 
 Calculating relevant metrics give
@@ -101,6 +125,9 @@ predict(model,data$X,type="linear")[1:5]
 As mentioned, the package can also be used to fit SGS to a Binomial response. First, we generate some Binomial data. We can use the same input matrix, $X$, and true $\beta$ as before.
 
 ```{r}
+sigmoid = function(x) {
+   1 / (1 + exp(-x))
+}
 y = ifelse(sigmoid(data$X %*% data$true_beta + rnorm(400))>0.5,1,0)
 train_y = y[1:350] 
 test_y = y[351:400]
@@ -112,14 +139,13 @@ test_X = data$X[351:400,]
 
 We can again apply CV.
 ```{r}
-cv_model = fit_sgs_cv(X = train_X, y = train_y, groups=groups, type = "logistic", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
+cv_model = fit_sgs_cv(X = train_X, y = train_y, groups=groups, type = "logistic", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=FALSE,verbose=TRUE)
 ```
-
 and again, use the predict function
 ```{r}
 predictions = predict(cv_model$fit,test_X,type="logistic")
 ```
-In the Binomial case, the \texttt{predict} function returns both the predicted class probabilities (\texttt{response}) and the predicted class (\texttt{class}). We can use this to check the prediction accuracy, given as $84\%$.
+In the Binomial case, the \texttt{predict} function returns both the predicted class probabilities (`response`) and the predicted class (`class`). We can use this to check the prediction accuracy, given as $84\%$.
 
 ```{r}
 predictions$response[1:5]

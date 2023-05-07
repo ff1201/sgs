@@ -22,18 +22,22 @@
 #'
 #' Generates variable and group penalties for SGS.
 #'
+#' The vMean and vMax SGS sequences are variable sequences derived specifically to give variable FDR-control for SGS under orthogonal designs (see Feser et. al. (2023)).
+#' The BH SLOPE sequence is derived in Bodgan et. al. (2015) and has links to the Benjamini-Hochberg critical values. The sequence provides variable FDR-control for SLOPE under orthogonal designs.
+#' The gMean gSLOPE sequence is derived in Brzyski et. al. (2015) and provides group FDR-control for gSLOPE under orthogonal designs.
+#'
 #' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties.
 #' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties.
-#' @param pen_method The type of penalty sequences to use.
-#'   - `1` uses the vMean SGS and gMean gSLOPE sequences. 
-#'   - `2` uses the vMax SGS and gMean gSLOPE sequences.
-#'   - `3` uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
+#' @param pen_method The type of penalty sequences to use (see Feser et. al. (2023)):
+#'   - \code{"1"} uses the vMean SGS and gMean gSLOPE sequences. 
+#'   - \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
+#'   - \code{"3"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
 #' @param groups A grouping structure for the input data. Should take the form of a vector of group indices.
 #' @param alpha The value of \eqn{\alpha}, defines the convex balance between SLOPE and gSLOPE.
 #' 
 #' @return A list containing:
-#' item{pen_slope_org}{A vector of the variable penalty sequence.}
-#' item{pen_gslope_org}{A vector of the group penalty sequence.}
+#' \item{pen_slope_org}{A vector of the variable penalty sequence.}
+#' \item{pen_gslope_org}{A vector of the group penalty sequence.}
 #'
 #' @examples
 #' # specify a grouping structure
@@ -46,6 +50,8 @@
 #' sequences = generate_penalties(gFDR=0.1, vFDR=0.1, pen_method=1, groups=groups, alpha=0.5)
 #' 
 #' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+#' @references M. Bogdan, E. Van den Berg, C. Sabatti, W. Su, E. Candes (2015) \emph{SLOPE — Adaptive variable selection via convex optimization}, \url{https://projecteuclid.org/journals/annals-of-applied-statistics/volume-9/issue-3/SLOPEAdaptive-variable-selection-via-convex-optimization/10.1214/15-AOAS842.full}
+#' @references D. Brzyski, W. Su, M. Bodgdan (2015) \emph{Group SLOPE - adaptive selection of groups of predictors}, \url{https://arxiv.org/abs/1511.09078}
 #' @export
 
 generate_penalties <- function(gFDR, vFDR, pen_method, groups, alpha){
@@ -55,8 +61,6 @@ generate_penalties <- function(gFDR, vFDR, pen_method, groups, alpha){
   wt_per_grp = sqrt(len_each_grp)
   wt_per_grp = wt_per_grp[names(group_ids)]
   num_groups = length(unique(groups))
-  success = 0 # checks whether convergence happened
-  LS_EPS = .Machine$double.eps # R accuracy
 
   if (pen_method == 1){ # SGS variable mean
     pen_gslope_org = lambdaChiOrtho(fdr=gFDR, n.group=num_groups, wt=wt_per_grp,
