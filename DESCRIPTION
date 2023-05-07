@@ -21,7 +21,6 @@ Imports:
     stats,
     faux,
     SLOPE,
-    RColorBrewer,
     Rlab,
     Rcpp (>= 1.0.10),
     RcppArmadillo
