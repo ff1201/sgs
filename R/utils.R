@@ -146,10 +146,23 @@ init_lipschitz <- function(f, f_grad, x0, f_opts, f_grad_opts){
   return(L0)
 }
 
+getGroupID <- function(group) { # from grpSLOPE package, which is no longer available on CRAN
+  group.unique <- unique(group)
+  n.group <- length(group.unique)
+  group.id <- list()
+  for (i in 1:n.group){
+    id <- as.character(group.unique[i])
+    group.id[[id]] <- which(group==group.unique[i])
+  }
+  class(group.id) <- "groupID"
+  return(group.id)
+}
+
 norm_vec <- function(x) sqrt(sum(x^2))
 
 proxGroupSortedL1 <- function(y, lambda,group, group_id, ...) {
   # proximal operator for group SLOPE - adapted so that the 0/0 = NaN error doesn't occur
+  # adapted from grpSLOPE package, which is no longer available on CRAN
   n.group = length(unique(group))
 
   if (length(lambda) != n.group) {
@@ -164,7 +177,7 @@ proxGroupSortedL1 <- function(y, lambda,group, group_id, ...) {
   }
 
   # get Euclidean norms of the solution vector
-  prox.norm <- prox_sorted_L1(x=group.norm, lambda=lambda, ...)
+  prox.norm <- sortedL1Prox(x=group.norm, lambda=lambda, ...)
 
   # compute the solution
   prox.solution <- rep(NA, length(y))
