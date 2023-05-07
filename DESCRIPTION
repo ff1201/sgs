@@ -33,7 +33,8 @@ Suggests:
     glmnet,
     seagull,
     testthat,
-    knitr
+    knitr,
+    rmarkdown
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 License: MIT + file LICENSE
