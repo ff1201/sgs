@@ -18,13 +18,13 @@
 #
 ###############################################################################
 
-#' plot a `"sgs"` object
+#' plot a `"sgs_cv"` object
 #'
 #' Plots the pathwise solution of a cross-validation fit, from a call to [fit_sgs_cv()] 
 #'
-#' @param fit Object an object of class \code{"sgs_cv"} from a call to [fit_sgs()].
+#' @param x Object an object of class \code{"sgs_cv"} from a call to [fit_sgs()].
 #' @param how_many Defines how many predictors to plot. Plots the predictors in decreasing order of largest absolute value.
-#' @param ... further arguments passed to or from other methods.
+#' @param ... further arguments passed to base function.
 #' 
 #' @seealso [fit_sgs_cv()]
 #' @family SGS-methods
@@ -49,14 +49,14 @@
 #' plot(cv_model, how_many = 10)
 #' @export
 
-plot.sgs_cv <- function(fit, how_many = 10, ...){ 
-  beta_matrix = matrix(0,nrow=length(fit$fit$z),ncol=length(fit$errors$lambda))
-  for (i in 1:length(fit$errors$lambda)){
-    if (fit$fit$intercept){
-      beta_matrix[,i] = as.vector(fit$all_models[[i]]$beta[-1])
+plot.sgs_cv <- function(x, how_many = 10, ...){ 
+  beta_matrix = matrix(0,nrow=length(x$fit$z),ncol=length(x$errors$lambda))
+  for (i in 1:length(x$errors$lambda)){
+    if (x$fit$intercept){
+      beta_matrix[,i] = as.vector(x$all_models[[i]]$beta[-1])
     } else {
-      beta_matrix[,i] = as.vector(fit$all_models[[i]]$beta)
+      beta_matrix[,i] = as.vector(x$all_models[[i]]$beta)
     }
   }
-  plot_path(beta_matrix=beta_matrix,lambdas=fit$errors$lambda,how_many=how_many,main="Pathwise solution")
+  plot_path(beta_matrix=beta_matrix,lambdas=x$errors$lambda,how_many=how_many,main="Pathwise solution")
 }

@@ -1,5 +1,5 @@
 ---
-title: "Introducing SGS"
+title: "SGS reproducible example"
 output: rmarkdown::html_vignette
 author: "Fabio Feser"
 date: "`r Sys.Date()`"
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE,message=FALSE ,warning=FALSE)
 
 Sparse-group SLOPE (SGS) is a penalised regression approach that performs bi-level selection with FDR control under orthogonal designs. SGS is described in detail in .
 
-The method is implemented in the \texttt{sgs} R package. The package has implementations for Gaussian and Binomail responses, both of which are demonstrated here.
+The method is implemented in the `sgs` R package. The package has implementations for Gaussian and Binomial responses, both of which are demonstrated here.
 
 # Gaussian response
 

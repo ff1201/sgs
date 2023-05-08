@@ -11,7 +11,7 @@
 
 \item{predict_X}{Input data to use for prediction.}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{further arguments passed to stats function.}
 }
 \value{
 A list containing:

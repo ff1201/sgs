@@ -22,9 +22,8 @@
 #'
 #' Performs prediction from an [fit_sgs()] model fit.
 #'
-#' @param fit Object an object of class \code{"sgs"} from a call to [fit_sgs()] or [fit_sgs_cv()].
-#' @param digits Number of digits to print in output.
-#' @param ... ignored.
+#' @param x Object an object of class \code{"sgs"} from a call to [fit_sgs()] or [fit_sgs_cv()].
+#' @param ... further arguments passed to base function.
 #' 
 #' @seealso [fit_sgs()], [fit_sgs_cv()]
 #' @family SGS-methods
@@ -46,14 +45,14 @@
 #' # print model
 #' print(model)
 #' @export
-print.sgs <- function(fit, digits = max(3, getOption("digits") - 3), ...){ 
-  num.nonzero <- apply(fit$beta,2, function(z){sum(z != 0)})
-  cat("\n regression type: ", fit$type, "\n\n")
-  print(cbind(lambdas = fit$lambdas, num.nonzero = num.nonzero, convergence = fit$success))
+print.sgs <- function(x, ...){ 
+  num.nonzero <- apply(x$beta,2, function(z){sum(z != 0)})
+  cat("\n regression type: ", x$type, "\n\n")
+  print(cbind(lambdas = x$lambdas, num.nonzero = num.nonzero, convergence = x$success))
 }
 
 #' @export
-print.sgs_cv <- function(fit, digits = max(3, getOption("digits") - 3), ...){ 
-  cat("\n regression type: ", fit$type, "\n\n")
-  print(cbind(lambda = fit$errors$lambda, error = fit$errors$error_criteria, estimated_non_zero = fit$errors$num_non_zero))
+print.sgs_cv <- function(x, ...){ 
+  cat("\n regression type: ", x$type, "\n\n")
+  print(cbind(lambda = x$errors$lambda, error = x$errors$error_criteria, estimated_non_zero = x$errors$num_non_zero))
 }

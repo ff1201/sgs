@@ -4,14 +4,12 @@
 \alias{print.sgs}
 \title{print a \code{"sgs"} object}
 \usage{
-\method{print}{sgs}(fit, digits = max(3, getOption("digits") - 3), ...)
+\method{print}{sgs}(x, ...)
 }
 \arguments{
-\item{fit}{Object an object of class \code{"sgs"} from a call to \code{\link[=fit_sgs]{fit_sgs()}} or \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}.}
+\item{x}{Object an object of class \code{"sgs"} from a call to \code{\link[=fit_sgs]{fit_sgs()}} or \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}.}
 
-\item{digits}{Number of digits to print in output.}
-
-\item{...}{ignored.}
+\item{...}{further arguments passed to base function.}
 }
 \value{
 A summary of the model fit.

@@ -79,16 +79,12 @@
 #' @references F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 #' @export
 
-#source("fit_sgs.R")
-
 fit_sgs_cv = function(X,y,groups,pen_method=1, type = "linear", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, backtracking = 0.7, max_iter = 5000, max_iter_backtracking = 100, tol = 1e-5, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=FALSE, v_weights=NULL,w_weights=NULL,error_criteria = "mse",max_lambda = NULL){
-  # generate lambdas
   num_vars = ncol(X)
   num_obs = nrow(X)
   num_groups = length(unique(groups))
   group_ids = getGroupID(groups) 
   len_each_grp = sapply(group_ids, length)
-  wt_per_grp = sqrt(len_each_grp)
   
   # weights
   if (is.null(v_weights) & is.null(w_weights)){

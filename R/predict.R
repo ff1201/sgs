@@ -24,9 +24,9 @@
 #'
 #' @param fit Object an object of class \code{"sgs"} from a call to [fit_sgs()].
 #' @param predict_X Input data to use for prediction.
-#' @param ... further arguments passed to or from other methods.
+#' @param ... further arguments passed to stats function.
 #' 
-#' @seealso [fit_sgs()] 
+#' @seealso [fit_sgs()]
 #' @family SGS-methods
 #' 
 #' @return A list containing:

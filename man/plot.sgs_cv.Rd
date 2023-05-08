@@ -2,16 +2,16 @@
 % Please edit documentation in R/plot.R
 \name{plot.sgs_cv}
 \alias{plot.sgs_cv}
-\title{plot a \code{"sgs"} object}
+\title{plot a \code{"sgs_cv"} object}
 \usage{
-\method{plot}{sgs_cv}(fit, how_many = 10, ...)
+\method{plot}{sgs_cv}(x, how_many = 10, ...)
 }
 \arguments{
-\item{fit}{Object an object of class \code{"sgs_cv"} from a call to \code{\link[=fit_sgs]{fit_sgs()}}.}
+\item{x}{Object an object of class \code{"sgs_cv"} from a call to \code{\link[=fit_sgs]{fit_sgs()}}.}
 
 \item{how_many}{Defines how many predictors to plot. Plots the predictors in decreasing order of largest absolute value.}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{further arguments passed to base function.}
 }
 \value{
 A list containing:
