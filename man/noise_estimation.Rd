@@ -57,6 +57,17 @@ An object of type \code{"sgs"} containing model fit information (see \code{\link
 \description{
 Fits an SGS model using the noise estimation procedure (Algorithm 2 from Feser et. al (2023)). This estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to cross-validation (\code{\link[=fit_sgs_cv]{fit_sgs_cv()}}). The approach is only compatible with the SGS penalties.
 }
+\examples{
+# specify a grouping structure
+groups = c(rep(1:3, each=3),
+           rep(4:10, each=4),
+           rep(11:13, each=5),
+           rep(14:21, each=6))
+# generate data
+data = generate_toy_data(p=100, n=90, groups = groups, seed_id=3,signal_mean = 10)
+# run noise estimation 
+model = noise_estimation(X=data$X, y=data$y, groups=groups, pen_method=1)
+}
 \references{
 F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
 }

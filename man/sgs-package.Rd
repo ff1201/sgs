@@ -16,13 +16,4 @@ Useful links:
 }
 
 }
-\author{
-\strong{Maintainer}: Fabio Feser \email{ff120@ic.ac.uk} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
-
-Authors:
-\itemize{
-  \item Marina Evangelou
-}
-
-}
 \keyword{internal}
