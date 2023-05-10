@@ -18,9 +18,11 @@
 #
 ###############################################################################
 
-#' fits an SGS model using noise estimation
+#' fits the adaptively scaled SGS model (AS-SGS)
 #'
-#' Fits an SGS model using the noise estimation procedure (Algorithm 2 from Feser et. al (2023)). This estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to cross-validation ([fit_sgs_cv()]). The approach is only compatible with the SGS penalties.
+#' Fits an SGS model using the noise estimation procedure, termed adaptively scaled SGS (Algorithm 2 from Feser et. al (2023)). 
+#' This adaptively estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to 
+#' cross-validation ([fit_sgs_cv()]). The approach is only compatible with the SGS penalties.
 #'
 #' @param X Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).
 #' @param y Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.
@@ -51,11 +53,11 @@
 #' # generate data
 #' data = generate_toy_data(p=100, n=90, groups = groups, seed_id=3,signal_mean = 10)
 #' # run noise estimation 
-#' model = noise_estimation(X=data$X, y=data$y, groups=groups, pen_method=1)
+#' model = as_sgs(X=data$X, y=data$y, groups=groups, pen_method=1)
 #' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
 #' @export
 
-noise_estimation <- function(X, y, groups, type="linear", pen_method = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise="l2", intercept=TRUE, verbose=FALSE){
+as_sgs <- function(X, y, groups, type="linear", pen_method = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise="l2", intercept=TRUE, verbose=FALSE){
     num_obs=dim(X)[1]
     if (intercept) {
         selected <- 1

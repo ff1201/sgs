@@ -16,4 +16,14 @@ Useful links:
 }
 
 }
+\author{
+\strong{Maintainer}: Fabio Feser \email{ff120@ic.ac.uk} (\href{https://orcid.org/0009-0007-3088-9727}{ORCID})
+
+Authors:
+\itemize{
+  \item Marina Evangelou (\href{https://orcid.org/0000-0003-0789-8944}{ORCID})
+  \item Heather Battey (\href{https://orcid.org/0000-0003-0381-6593}{ORCID})
+}
+
+}
 \keyword{internal}
