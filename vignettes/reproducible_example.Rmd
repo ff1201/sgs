@@ -153,4 +153,6 @@ predictions$class[1:5]
 sum(predictions$class == test_y)/length(test_y)
 ```
 
+## Reference
 
+* [Feser, F., Evangelou, M. (2023). *Sparse-group SLOPE: adaptive bi-level selection with FDR-control*](https://arxiv.org/abs/2305.09467).

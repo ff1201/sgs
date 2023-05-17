@@ -34,4 +34,4 @@ model = fit_sgs(X = X, y = y, groups = groups, vFDR=0.1, gFDR=0.1)
 
 where `X` is the input matrix, `y` the response vector, `groups` a vector containing indices for the groups of the predictors, and `vFDR` and `gFDR` are the the target variable/group false discovery rates.
 
-[A more extensive example can be found here](https://ff1201.github.io/sgs/reproducible-example/).
+[A more extensive example can be found here](https://github.com/ff1201/sgs/blob/master/vignettes/reproducible_example.Rmd).

@@ -24,7 +24,7 @@
 #'
 #' \code{atos()} solves convex minimization problems of the form
 #' \deqn{
-#'   \min_{x \in \mathbb{R}^p} f(x) + g(x) + h(x),
+#'   f(x) + g(x) + h(x),
 #' }
 #' where \eqn{f} is convex and differentiable with \eqn{L_f}-Lipschitz gradient, and \eqn{g} and \eqn{h} are both convex.
 #' The algorithm is not symmetrical, but usually the difference between variations are only small numerical values, which are filtered out.
