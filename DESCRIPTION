@@ -3,13 +3,11 @@ Title: Sparse-group SLOPE: adaptive bi-level selection with FDR control
 Version: 0.0.0.9000
 Date: 2023-05-07
 Authors@R: c(person("Fabio", "Feser", role = c("aut", "cre"), email = "ff120@ic.ac.uk",comment = c(ORCID = "0009-0007-3088-9727")),
-             person("Marina", "Evangelou", role =c("aut"), comment = c(ORCID = "0000-0003-0789-8944")),
-             person("Heather", "Battey", role =c("aut"), comment =  c(ORCID = "0000-0003-0381-6593")))
+             person("Marina", "Evangelou", role =c("aut"), comment = c(ORCID = "0000-0003-0789-8944")))
 Maintainer: Fabio Feser <ff120@ic.ac.uk>
 Author: Fabio Feser [aut, cre],
-        Marina Evangelou [aut],
-        Heather Battey [aut]
-Description: Implementation of Sparse-group SLOPE: Adaptive bi-level with FDR-control and applications in genetics (Bogdan et al. (2015) <doi:10/gfgwzt>). Linear and logistic regression models are supported, both of which can be fit using k-fold cross-validation. Dense and sparse input matrices are supported. In addition, a general adaptive three operator splitting (ATOS) implementation is provided.
+        Marina Evangelou [aut]
+Description: Implementation of Sparse-group SLOPE: Adaptive bi-level with FDR-control (Feser et al. (2023) <https://arxiv.org/abs/2305.09467>). Linear and logistic regression models are supported, both of which can be fit using k-fold cross-validation. Dense and sparse input matrices are supported. In addition, a general adaptive three operator splitting (ATOS) implementation is provided.
 Imports:
     Matrix,
     MASS,
