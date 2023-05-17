@@ -75,7 +75,7 @@
 #' cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", 
 #' nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, 
 #' standardise="l2",intercept=TRUE,verbose=TRUE)
-#' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+#' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
 #' @references F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 #' @export
 

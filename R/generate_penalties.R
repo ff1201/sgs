@@ -49,7 +49,7 @@
 #' # generate sequences
 #' sequences = generate_penalties(gFDR=0.1, vFDR=0.1, pen_method=1, groups=groups, alpha=0.5)
 #' 
-#' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+#' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
 #' @references M. Bogdan, E. Van den Berg, C. Sabatti, W. Su, E. Candes (2015) \emph{SLOPE — Adaptive variable selection via convex optimization}, \url{https://projecteuclid.org/journals/annals-of-applied-statistics/volume-9/issue-3/SLOPEAdaptive-variable-selection-via-convex-optimization/10.1214/15-AOAS842.full}
 #' @references D. Brzyski, W. Su, M. Bodgdan (2015) \emph{Group SLOPE - adaptive selection of groups of predictors}, \url{https://arxiv.org/abs/1511.09078}
 #' @export

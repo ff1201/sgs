@@ -3,7 +3,7 @@
 
 Implementation of Sparse-group SLOPE (SGS), a sparse-group penalisation regression approach. SGS performs adaptive bi-level selection, controlling the FDR under orthogonal designs. Linear (Gaussian) and logistic (Binomial) regression are supported, both with dense and sparse matrix implementations. Cross-validation functionality is also supported. SGS is implemented using adaptive three operator splitting (ATOS) and the package also contains a general implementation of ATOS.
 
-A detailed description of SGS can be found in [F. Feser, M. Evangelou (2023) "Sparse-group SLOPE: adaptive bi-level selection with FDR-control and applications in genetics"](link).
+A detailed description of SGS can be found in [F. Feser, M. Evangelou (2023) "Sparse-group SLOPE: adaptive bi-level selection with FDR-control"](https://arxiv.org/abs/2305.09467).
 
 
 ## Installation

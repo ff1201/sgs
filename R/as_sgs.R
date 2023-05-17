@@ -54,7 +54,7 @@
 #' data = generate_toy_data(p=100, n=90, groups = groups, seed_id=3,signal_mean = 10)
 #' # run noise estimation 
 #' model = as_sgs(X=data$X, y=data$y, groups=groups, pen_method=1)
-#' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE}, \url{https://github.com/ff1201/sgs}
+#' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
 #' @export
 
 as_sgs <- function(X, y, groups, type="linear", pen_method = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise="l2", intercept=TRUE, verbose=FALSE){
