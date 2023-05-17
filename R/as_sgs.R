@@ -46,12 +46,9 @@
 #'
 #' @examples
 #' # specify a grouping structure
-#' groups = c(rep(1:3, each=3),
-#'            rep(4:10, each=4),
-#'            rep(11:13, each=5),
-#'            rep(14:21, each=6))
+#' groups = c(1,1,1,2,2,3,3,3,4,4)
 #' # generate data
-#' data = generate_toy_data(p=100, n=90, groups = groups, seed_id=3,signal_mean = 10)
+#' data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3)
 #' # run noise estimation 
 #' model = as_sgs(X=data$X, y=data$y, groups=groups, pen_method=1)
 #' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}

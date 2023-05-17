@@ -64,16 +64,12 @@
 #'
 #' @examples
 #' # specify a grouping structure
-#' groups = c(rep(1:20, each=3),
-#'           rep(21:40, each=4),
-#'           rep(41:60, each=5),
-#'           rep(61:80, each=6),
-#'           rep(81:100, each=7))
+#' groups = c(1,1,1,2,2,3,3,3,4,4)
 #' # generate data
-#' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+#' data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3)
 #' # run SGS with cross-validation (the proximal functions can be found in utils.R)
 #' cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", 
-#' nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, 
+#' nlambda = 5, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, 
 #' standardise="l2",intercept=TRUE,verbose=TRUE)
 #' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
 #' @references F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
