@@ -8,7 +8,7 @@ A detailed description of SGS can be found in [F. Feser, M. Evangelou (2023) "Sp
 
 ## Installation
 
-An R package has been submitted. In the meantime, to install, use the development version from [GitHub](https://github.com/):
+An R package has been submitted. In the meantime, to install use the development version from [GitHub](https://github.com/):
 
 ``` r
 library(devtools)
