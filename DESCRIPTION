@@ -17,8 +17,7 @@ Imports:
     faux,
     SLOPE,
     Rlab,
-    Rcpp (>= 1.0.10),
-    RcppArmadillo
+    Rcpp (>= 1.0.10)
 LinkingTo:
     Rcpp,
     RcppArmadillo

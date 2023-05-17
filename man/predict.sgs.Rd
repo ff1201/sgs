@@ -4,12 +4,12 @@
 \alias{predict.sgs}
 \title{predict using a \code{"sgs"} object}
 \usage{
-\method{predict}{sgs}(fit, predict_X, ...)
+\method{predict}{sgs}(object, x, ...)
 }
 \arguments{
-\item{fit}{Object an object of class \code{"sgs"} from a call to \code{\link[=fit_sgs]{fit_sgs()}}.}
+\item{object}{an object of class \code{"sgs"} from a call to \code{\link[=fit_sgs]{fit_sgs()}}.}
 
-\item{predict_X}{Input data to use for prediction.}
+\item{x}{Input data to use for prediction.}
 
 \item{...}{further arguments passed to stats function.}
 }
@@ -23,18 +23,14 @@ Performs prediction from an \code{\link[=fit_sgs]{fit_sgs()}} model fit.
 }
 \examples{
 # specify a grouping structure
-groups = c(rep(1:20, each=3),
-          rep(21:40, each=4),
-          rep(41:60, each=5),
-          rep(61:80, each=6),
-          rep(81:100, each=7))
+groups = c(1,1,1,2,2,3,3,3,4,4)
 # generate data
-data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
 # run SGS 
 model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
 vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 # use predict function
-model_predictions = predict(model, predict_X = data$X)
+model_predictions = predict(model, x = data$X)
 }
 \seealso{
 \code{\link[=fit_sgs]{fit_sgs()}}

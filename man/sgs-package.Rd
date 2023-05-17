@@ -4,9 +4,9 @@
 \name{sgs-package}
 \alias{sgs-package}
 \alias{_PACKAGE}
-\title{sgs: Sparse-group SLOPE: adaptive bi-level selection with FDR control}
+\title{sgs: Sparse-Group SLOPE: Adaptive Bi-Level Selection with FDR Control}
 \description{
-Implementation of Sparse-group SLOPE: Adaptive bi-level with FDR-control and applications in genetics (Bogdan et al. (2015) \doi{10/gfgwzt}). Linear and logistic regression models are supported, both of which can be fit using k-fold cross-validation. Dense and sparse input matrices are supported. In addition, a general adaptive three operator splitting (ATOS) implementation is provided.
+Implementation of Sparse-group SLOPE: Adaptive bi-level with FDR-control (Feser et al. (2023) \href{https://arxiv.org/abs/2305.09467}{arXiv:2305.09467}). Linear and logistic regression models are supported, both of which can be fit using k-fold cross-validation. Dense and sparse input matrices are supported. In addition, a general adaptive three operator splitting (ATOS) implementation is provided.
 }
 \seealso{
 Useful links:
@@ -22,7 +22,6 @@ Useful links:
 Authors:
 \itemize{
   \item Marina Evangelou (\href{https://orcid.org/0000-0003-0789-8944}{ORCID})
-  \item Heather Battey (\href{https://orcid.org/0000-0003-0381-6593}{ORCID})
 }
 
 }

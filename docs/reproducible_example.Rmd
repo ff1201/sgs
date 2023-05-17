@@ -1,0 +1,158 @@
+---
+title: "SGS reproducible example"
+output: rmarkdown::html_vignette
+author: "Fabio Feser"
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{SGS reproducible example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message=FALSE ,warning=FALSE)
+```
+
+# Introduction
+
+Sparse-group SLOPE (SGS) is a penalised regression approach that performs bi-level selection with FDR control under orthogonal designs. SGS is described in detail in .
+
+The method is implemented in the `sgs` R package. The package has implementations for Gaussian and Binomial responses, both of which are demonstrated here.
+
+# Gaussian response
+
+### Data
+
+For this example, a $400\times 500$ input matrix is used with a simple grouping structure, sampled from a multivariate Gaussian distribution with no correlation. 
+
+```{r}
+library(sgs)
+groups = c(rep(1:20, each=3),
+           rep(21:40, each=4),
+           rep(41:60, each=5),
+           rep(61:80, each=6),
+           rep(81:100, each=7))
+
+data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+```
+
+### Fitting an SGS model
+
+We now fit an SGS model to the data using linear regression. The SGS model has many different hyperparameters which can be tuned/selected. Of particular importance is the $\lambda$ parameter, which defines the level of sparsity in the model. First, we select this manually and then next use cross-validation to tune it. The other parameters we leave as their default values, although they can easily be changed. 
+
+```{r}
+model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
+```
+
+Note: we have fit an intercept and applied $\ell_2$ standardisation. This is the recommended usage when applying SGS.
+
+### Output of model
+
+The package provides several useful outputs after fitting a model. The \texttt{beta} vector shows the fitted values (note the intercept). We can also recover the indices of the non-zero variables and groups, which are indexed from the first variable, not the intercept. 
+
+```{r}
+model$beta[model$selected_var+1,]
+model$group.effects[model$selected_group,]
+model$selected_var
+model$selected_group
+```
+
+Defining a function that lets us calculate various metrics (including the FDR and sensitivity):
+```{r}
+fdr_sensitivity = function(fitted_ids, true_ids,num_coef){
+  # calculates FDR, FPR, and sensitivity
+  num_true = length(intersect(fitted_ids,true_ids))
+  num_false = length(fitted_ids) - num_true
+  num_missed = length(true_ids) - num_true
+  num_true_negatives = num_coef - length(true_ids)
+  out=c()
+  out$fdr = num_false / (num_true + num_false)
+  if (is.nan(out$fdr)){out$fdr = 0}
+  out$sensitivity = num_true / length(true_ids)
+  if (length(true_ids) == 0){
+    out$sensitivity = 1
+  }
+  out$fpr = num_false / num_true_negatives
+  out$f1 = (2*num_true)/(2*num_true + num_false + num_missed)
+  if (is.nan(out$f1)){out$f1 = 1}
+  return(out)
+}
+```
+
+Calculating relevant metrics give
+```{r}
+fdr_sensitivity(fitted_ids = model$selected_var, true_ids = data$true_var_id, num_coef = 500)
+fdr_sensitivity(fitted_ids = model$selected_group, true_ids = data$true_grp_id, num_coef = 100)
+```
+
+The model is currently too sparse, as our choice of $\lambda$ is too high. We can instead use cross-validation.
+
+### Cross validation
+
+Cross-validation is used to fit SGS models along a $\lambda$ path of length $20$. The first value, $\lambda_\text{max}$, is chosen to give the null model and the path is terminated at $\lambda_\text{min} = min_frac \dot \lambda_\text{max}$. The 1se rule (as in the \texttt{glmnet} package) is used to choose the optimal model.
+```{r}
+cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
+```
+
+The fitting verbose contains useful information, but wr cAside from the fitting verbose, we can see a more succinct summary by using the \texttt{print} function
+
+```{r}
+print(cv_model)
+```
+
+The best model is found to be the one at the end of the path. Checking the metrics again, we see how CV has generated a model with the correct amount of sparsity that gives FDR levels below the specified values.
+
+```{r}
+fdr_sensitivity(fitted_ids = cv_model$fit$selected_var, true_ids = data$true_var_id, num_coef = 500)
+fdr_sensitivity(fitted_ids = cv_model$fit$selected_group, true_ids = data$true_grp_id, num_coef = 100)
+```
+
+### Plot
+We can visualise the solution using the plot function
+```{r}
+plot(cv_model,how_many = 10)
+```
+
+### Prediction
+
+The package has an implemented predict function, to allow for easy prediction
+```{r}
+predict(model,data$X,type="linear")[1:5]
+```
+
+# Logistic regression
+
+As mentioned, the package can also be used to fit SGS to a Binomial response. First, we generate some Binomial data. We can use the same input matrix, $X$, and true $\beta$ as before.
+
+```{r}
+sigmoid = function(x) {
+   1 / (1 + exp(-x))
+}
+y = ifelse(sigmoid(data$X %*% data$true_beta + rnorm(400))>0.5,1,0)
+train_y = y[1:350] 
+test_y = y[351:400]
+train_X = data$X[1:350,] 
+test_X = data$X[351:400,]
+```
+
+### Fitting and prediction
+
+We can again apply CV.
+```{r}
+cv_model = fit_sgs_cv(X = train_X, y = train_y, groups=groups, type = "logistic", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=FALSE,verbose=TRUE)
+```
+and again, use the predict function
+```{r}
+predictions = predict(cv_model$fit,test_X,type="logistic")
+```
+In the Binomial case, the \texttt{predict} function returns both the predicted class probabilities (`response`) and the predicted class (`class`). We can use this to check the prediction accuracy, given as $84\%$.
+
+```{r}
+predictions$response[1:5]
+predictions$class[1:5]
+sum(predictions$class == test_y)/length(test_y)
+```
+
+## Reference
+
+* [Feser, F., Evangelou, M. (2023). *Sparse-group SLOPE: adaptive bi-level selection with FDR-control*](https://arxiv.org/abs/2305.09467).

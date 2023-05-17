@@ -35,13 +35,9 @@
 #'
 #' @examples
 #' # specify a grouping structure
-#' groups = c(rep(1:20, each=3),
-#'           rep(21:40, each=4),
-#'           rep(41:60, each=5),
-#'           rep(61:80, each=6),
-#'           rep(81:100, each=7))
+#' groups = c(1,1,2,2,3)
 #' # generate data
-#' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+#' data = generate_toy_data(p=5, n=4, groups = groups, seed_id=3,signal_mean=20,group_sparsity=1)
 #' # run SGS 
 #' cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", 
 #' nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, 

@@ -44,9 +44,11 @@
 #' @return An object of type \code{"sgs"} containing model fit information (see [fit_sgs()]). 
 #'
 #' @examples
-#' groups = c(1,1,1,2,2,3,3,3,4,4)
+#' # specify a grouping structure
+#' groups = c(1,1,2,2,3)
 #' # generate data
-#' data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3)
+#' data = generate_toy_data(p=5, n=4, groups = groups, seed_id=3,
+#' signal_mean=20,group_sparsity=1,var_sparsity=1)
 #' # run noise estimation 
 #' model = scaled_sgs(X=data$X, y=data$y, groups=groups,pen_method=1)
 #' @references M. Bogdan, E. Van den Berg, C. Sabatti, W. Su, E. Candes (2015) \emph{SLOPE — Adaptive variable selection via convex optimization}, \url{https://projecteuclid.org/journals/annals-of-applied-statistics/volume-9/issue-3/SLOPEAdaptive-variable-selection-via-convex-optimization/10.1214/15-AOAS842.full}

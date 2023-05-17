@@ -88,7 +88,7 @@
 #' # specify a grouping structure
 #' groups = c(1,1,1,2,2,3,3,3,4,4)
 #' # generate data
-#' data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3)
+#' data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
 #' # run SGS 
 #' model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
 #' vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)

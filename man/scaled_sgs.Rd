@@ -60,12 +60,10 @@ Fits an SGS model using the noise estimation procedure (Algorithm 5 from Bogdan 
 }
 \examples{
 # specify a grouping structure
-groups = c(rep(1:3, each=3),
-           rep(4:10, each=4),
-           rep(11:13, each=5),
-           rep(14:21, each=6))
+groups = c(1,1,2,2,3)
 # generate data
-data = generate_toy_data(p=100, n=90, groups = groups, seed_id=3,signal_mean = 10)
+data = generate_toy_data(p=5, n=4, groups = groups, seed_id=3,
+signal_mean=20,group_sparsity=1,var_sparsity=1)
 # run noise estimation 
 model = scaled_sgs(X=data$X, y=data$y, groups=groups,pen_method=1)
 }

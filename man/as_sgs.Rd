@@ -9,7 +9,7 @@ as_sgs(
   y,
   groups,
   type = "linear",
-  pen_method = 1,
+  pen_method = 2,
   alpha = 0.95,
   vFDR = 0.1,
   gFDR = 0.1,
@@ -61,12 +61,10 @@ cross-validation (\code{\link[=fit_sgs_cv]{fit_sgs_cv()}}). The approach is only
 }
 \examples{
 # specify a grouping structure
-groups = c(rep(1:3, each=3),
-           rep(4:10, each=4),
-           rep(11:13, each=5),
-           rep(14:21, each=6))
+groups = c(1,1,2,2)
 # generate data
-data = generate_toy_data(p=100, n=90, groups = groups, seed_id=3,signal_mean = 10)
+data = generate_toy_data(p=4, n=4, groups = groups, seed_id=3,
+signal_mean=100,group_sparsity = 1,var_sparsity = 1,noise_level=0.1)
 # run noise estimation 
 model = as_sgs(X=data$X, y=data$y, groups=groups, pen_method=1)
 }

@@ -101,15 +101,15 @@ Sparse-group SLOPE (SGS) main fitting function. Supports both linear and logisti
 \code{fit_sgs()} fits an SGS model using ATOS. SGS is a sparse-group method, so that it selects both variables and groups. Unlike group selection approaches, not every variable within a group is set as active.
 It solves the convex optimisation problem given by
 \deqn{
-  \hat{\beta}_\text{SGS} = \argmin_{b\in \mathbb{R}^p}\left\{ \frac{1}{2n}\ell (b ; y, \mathbf{X}) + \lambda \alpha \sum_{i=1}^{p}v_i |b|_{(i)} + \lambda (1-\alpha)\sum_{g=1}^{m}w_g \sqrt{p_g} \|b^{(g)}\|_2 \right\},
+  \frac{1}{2n} f(b ; y, \mathbf{X}) + \lambda \alpha \sum_{i=1}^{p}v_i |b|_{(i)} + \lambda (1-\alpha)\sum_{g=1}^{m}w_g \sqrt{p_g} \|b^{(g)}\|_2,
 }
-where \eqn{ell(\cdot)} is the loss function. In the case of the linear model, the loss function is given by the mean-squared error loss:
+where \eqn{f(\cdot)} is the loss function. In the case of the linear model, the loss function is given by the mean-squared error loss:
 \deqn{
- \ell(b; y, \mathbf{X}) = \left\|y-\mathbf{X}b \right\|_2^2.
+ f(b; y, \mathbf{X}) = \left\|y-\mathbf{X}b \right\|_2^2.
 }
 In the logistic model, the loss function is given by
 \deqn{
-\ell(b;y,\mathbf{X})=-1/n \log(\mathcal{L}(b; y, \mathbf{X})).
+f(b;y,\mathbf{X})=-1/n \log(\mathcal{L}(b; y, \mathbf{X})).
 }
 where the log-likelihood is given by
 \deqn{
@@ -120,13 +120,9 @@ The penalty parameters in SGS are sorted so that the largest coefficients are ma
 }
 \examples{
 # specify a grouping structure
-groups = c(rep(1:20, each=3),
-          rep(21:40, each=4),
-          rep(41:60, each=5),
-          rep(61:80, each=6),
-          rep(81:100, each=7))
+groups = c(1,1,1,2,2,3,3,3,4,4)
 # generate data
-data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
 # run SGS 
 model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
 vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)

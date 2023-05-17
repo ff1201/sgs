@@ -66,7 +66,7 @@
 #' # specify a grouping structure
 #' groups = c(1,1,1,2,2,3,3,3,4,4)
 #' # generate data
-#' data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3)
+#' data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
 #' # run SGS with cross-validation (the proximal functions can be found in utils.R)
 #' cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", 
 #' nlambda = 5, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, 

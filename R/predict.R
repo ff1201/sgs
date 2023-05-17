@@ -22,8 +22,8 @@
 #'
 #' Performs prediction from an [fit_sgs()] model fit.
 #'
-#' @param fit Object an object of class \code{"sgs"} from a call to [fit_sgs()].
-#' @param predict_X Input data to use for prediction.
+#' @param object an object of class \code{"sgs"} from a call to [fit_sgs()].
+#' @param x Input data to use for prediction.
 #' @param ... further arguments passed to stats function.
 #' 
 #' @seealso [fit_sgs()]
@@ -35,34 +35,30 @@
 #'
 #' @examples
 #' # specify a grouping structure
-#' groups = c(rep(1:20, each=3),
-#'           rep(21:40, each=4),
-#'           rep(41:60, each=5),
-#'           rep(61:80, each=6),
-#'           rep(81:100, each=7))
+#' groups = c(1,1,1,2,2,3,3,3,4,4)
 #' # generate data
-#' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+#' data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
 #' # run SGS 
 #' model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
 #' vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 #' # use predict function
-#' model_predictions = predict(model, predict_X = data$X)
+#' model_predictions = predict(model, x = data$X)
 #' @export
 #' @method predict sgs
 
-predict.sgs <- function(fit, predict_X, ...){
-  if (fit$type=="linear"){
-    if (fit$intercept){
-    predictions = arma_mv(cbind(1,predict_X),as.vector(fit$beta))
+predict.sgs <- function(object, x, ...){
+  if (object$type=="linear"){
+    if (object$intercept){
+    predictions = arma_mv(cbind(1,x),as.vector(object$beta))
     } else {
-      predictions = arma_mv(predict_X,as.vector(fit$beta))
+      predictions = arma_mv(x,as.vector(object$beta))
     }
-  } else if (fit$type == "logistic"){
+  } else if (object$type == "logistic"){
     predictions = c()
-    if (fit$intercept){
-      predictions$response = sigmoid(arma_mv(cbind(1,predict_X),as.vector(fit$beta)))
+    if (object$intercept){
+      predictions$response = sigmoid(arma_mv(cbind(1,x),as.vector(object$beta)))
     } else {
-      predictions$response = sigmoid(arma_mv(predict_X,as.vector(fit$beta)))
+      predictions$response = sigmoid(arma_mv(x,as.vector(object$beta)))
     }
     predictions$class = ifelse(predictions$response>0.5,1,0)
   } else {

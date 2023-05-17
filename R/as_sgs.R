@@ -46,15 +46,16 @@
 #'
 #' @examples
 #' # specify a grouping structure
-#' groups = c(1,1,1,2,2,3,3,3,4,4)
+#' groups = c(1,1,2,2)
 #' # generate data
-#' data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3)
+#' data = generate_toy_data(p=4, n=4, groups = groups, seed_id=3,
+#' signal_mean=100,group_sparsity = 1,var_sparsity = 1,noise_level=0.1)
 #' # run noise estimation 
 #' model = as_sgs(X=data$X, y=data$y, groups=groups, pen_method=1)
 #' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
 #' @export
 
-as_sgs <- function(X, y, groups, type="linear", pen_method = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise="l2", intercept=TRUE, verbose=FALSE){
+as_sgs <- function(X, y, groups, type="linear", pen_method = 2, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise="l2", intercept=TRUE, verbose=FALSE){
     num_obs=dim(X)[1]
     if (intercept) {
         selected <- 1
@@ -72,9 +73,9 @@ as_sgs <- function(X, y, groups, type="linear", pen_method = 1, alpha=0.95, vFDR
         
         
         noise_est <- estimateNoise(X_2[, selected], y_1, intercept)
-        pens_out = generate_penalties_2(gFDR, vFDR, pen_method=2,groups,alpha,lambda = noise_est)
+        pens_out = generate_penalties_2(gFDR, vFDR, pen_method=pen_method,groups,alpha,lambda = noise_est)
         
-        fit <- fit_sgs(X=X, y=y, groups=groups, pen_method=2, type, lambda=noise_est*out$scale_pen, alpha=alpha, vFDR=vFDR, gFDR=gFDR,intercept=intercept,
+        fit <- fit_sgs(X=X, y=y, groups=groups, pen_method=pen_method, type, lambda=noise_est*out$scale_pen, alpha=alpha, vFDR=vFDR, gFDR=gFDR,intercept=intercept,
                        v_weights=pens_out$pen_slope_org,w_weights=pens_out$pen_gslope_org,standardise=standardise)
         
         selected <- fit$selected_var
