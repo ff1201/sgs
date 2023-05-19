@@ -81,7 +81,7 @@ An object of class \code{"atos"} containing:
 \item{intercept}{Logical flag indicating whether an intercept was fit.}
 }
 \description{
-Function for fitting ATOS with general convex penalties. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
+Function for fitting adaptive three operator splitting (ATOS) with general convex penalties. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
 }
 \details{
 \code{atos()} solves convex minimization problems of the form

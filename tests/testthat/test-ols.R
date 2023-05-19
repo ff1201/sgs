@@ -1,5 +1,4 @@
 test_that("unregularized gaussian models reduces to OLS, with no intercept", {
-  options(warn=-1) # to surpress warning about using lm function for lambda = 0
   set.seed(3)
   n=200
   p=10
@@ -22,7 +21,6 @@ test_that("unregularized gaussian models reduces to OLS, with no intercept", {
 })
 
 test_that("unregularized gaussian models reduces to OLS, with intercept", {
-  options(warn=-1) # to surpress warning about using lm function for lambda = 0
   set.seed(3)
   n=200
   p=10

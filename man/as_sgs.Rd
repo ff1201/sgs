@@ -35,9 +35,9 @@ as_sgs(
 
 \item{alpha}{The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.}
 
-\item{vFDR}{Defines the desired variable FDR level, which determines the shape of the variable penalties. Must be between 0 and 1.}
+\item{vFDR}{Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties. Must be between 0 and 1.}
 
-\item{gFDR}{Defines the desired group FDR level, which determines the shape of the group penalties. Must be between 0 and 1.}
+\item{gFDR}{Defines the desired group false discovery rate (FDR) level, which determines the shape of the group penalties. Must be between 0 and 1.}
 
 \item{standardise}{Type of standardisation to perform on \code{X}:
 \itemize{
@@ -58,15 +58,6 @@ An object of type \code{"sgs"} containing model fit information (see \code{\link
 Fits an SGS model using the noise estimation procedure, termed adaptively scaled SGS (Algorithm 2 from Feser et. al (2023)).
 This adaptively estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to
 cross-validation (\code{\link[=fit_sgs_cv]{fit_sgs_cv()}}). The approach is only compatible with the SGS penalties.
-}
-\examples{
-# specify a grouping structure
-groups = c(1,1,2,2)
-# generate data
-data = generate_toy_data(p=4, n=4, groups = groups, seed_id=3,
-signal_mean=100,group_sparsity = 1,var_sparsity = 1,noise_level=0.1)
-# run noise estimation 
-model = as_sgs(X=data$X, y=data$y, groups=groups, pen_method=1)
 }
 \references{
 F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}

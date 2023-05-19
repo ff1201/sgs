@@ -32,8 +32,8 @@
 #'   - \code{"1"} uses the vMean and gMean SGS sequences.
 #'   - \code{"2"} uses the vMax and gMax SGS sequences.
 #' @param alpha The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.
-#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties. Must be between 0 and 1.
-#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties. Must be between 0 and 1.
+#' @param vFDR Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties. Must be between 0 and 1.
+#' @param gFDR Defines the desired group false discovery rate (FDR) level, which determines the shape of the group penalties. Must be between 0 and 1.
 #' @param standardise Type of standardisation to perform on \code{X}: 
 #'   - \code{"l2"} standardises the input data to have \eqn{\ell_2} norms of one.
 #'   - \code{"l1"} standardises the input data to have \eqn{\ell_1} norms of one.
@@ -44,14 +44,6 @@
 #' 
 #' @return An object of type \code{"sgs"} containing model fit information (see [fit_sgs()]). 
 #'
-#' @examples
-#' # specify a grouping structure
-#' groups = c(1,1,2,2)
-#' # generate data
-#' data = generate_toy_data(p=4, n=4, groups = groups, seed_id=3,
-#' signal_mean=100,group_sparsity = 1,var_sparsity = 1,noise_level=0.1)
-#' # run noise estimation 
-#' model = as_sgs(X=data$X, y=data$y, groups=groups, pen_method=1)
 #' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
 #' @export
 

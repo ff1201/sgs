@@ -20,7 +20,7 @@
 
 #' adaptive three operator splitting (ATOS)
 #'
-#' Function for fitting ATOS with general convex penalties. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
+#' Function for fitting adaptive three operator splitting (ATOS) with general convex penalties. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
 #'
 #' \code{atos()} solves convex minimization problems of the form
 #' \deqn{

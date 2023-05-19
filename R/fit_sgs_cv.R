@@ -20,9 +20,9 @@
 
 #' fit an SGS model using CV
 #'
-#' Function to fit a pathwise solution of SGS models using k-fold cross-validation. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
+#' Function to fit a pathwise solution of sparse-group SLOPE (SGS) models using k-fold cross-validation. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
 #'
-#' Fits SGS models under a pathwise solution using ATOS, picking the 1se model as optimum. Warm starts are implemented.
+#' Fits SGS models under a pathwise solution using adaptive three operator splitting (ATOS), picking the 1se model as optimum. Warm starts are implemented.
 #'
 #' @param X Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).
 #' @param y Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.
@@ -35,8 +35,8 @@
 #' @param nlambda The number of pathwise \eqn{\lambda} values to fit.
 #' @param nfolds The number of folds to use in cross-validation.
 #' @param alpha The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.
-#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties. Must be between 0 and 1.
-#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties. Must be between 0 and 1.
+#' @param vFDR Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties. Must be between 0 and 1.
+#' @param gFDR Defines the desired group false discovery rate (FDR) level, which determines the shape of the group penalties. Must be between 0 and 1.
 #' @param max_iter Maximum number of ATOS iterations to perform. 
 #' @param backtracking The backtracking parameter, \eqn{\tau}, as defined in Pedregosa et. al. (2018).
 #' @param max_iter_backtracking Maximum number of backtracking line search iterations to perform per global iteration.

@@ -31,8 +31,8 @@
 #'   - \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
 #'   - \code{"1"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
 #' @param alpha The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.
-#' @param vFDR Defines the desired variable FDR level, which determines the shape of the variable penalties. Must be between 0 and 1.
-#' @param gFDR Defines the desired group FDR level, which determines the shape of the group penalties. Must be between 0 and 1.
+#' @param vFDR Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties. Must be between 0 and 1.
+#' @param gFDR Defines the desired group false discovery rate (FDR) level, which determines the shape of the group penalties. Must be between 0 and 1.
 #' @param standardise Type of standardisation to perform on \code{X}: 
 #'   - \code{"l2"} standardises the input data to have \eqn{\ell_2} norms of one.
 #'   - \code{"l1"} standardises the input data to have \eqn{\ell_1} norms of one.

@@ -51,9 +51,9 @@ fit_sgs_cv(
 
 \item{alpha}{The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.}
 
-\item{vFDR}{Defines the desired variable FDR level, which determines the shape of the variable penalties. Must be between 0 and 1.}
+\item{vFDR}{Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties. Must be between 0 and 1.}
 
-\item{gFDR}{Defines the desired group FDR level, which determines the shape of the group penalties. Must be between 0 and 1.}
+\item{gFDR}{Defines the desired group false discovery rate (FDR) level, which determines the shape of the group penalties. Must be between 0 and 1.}
 
 \item{backtracking}{The backtracking parameter, \eqn{\tau}, as defined in Pedregosa et. al. (2018).}
 
@@ -95,10 +95,10 @@ A list containing:
 \item{type}{Indicates which type of regression was performed.}
 }
 \description{
-Function to fit a pathwise solution of SGS models using k-fold cross-validation. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
+Function to fit a pathwise solution of sparse-group SLOPE (SGS) models using k-fold cross-validation. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
 }
 \details{
-Fits SGS models under a pathwise solution using ATOS, picking the 1se model as optimum. Warm starts are implemented.
+Fits SGS models under a pathwise solution using adaptive three operator splitting (ATOS), picking the 1se model as optimum. Warm starts are implemented.
 }
 \examples{
 # specify a grouping structure

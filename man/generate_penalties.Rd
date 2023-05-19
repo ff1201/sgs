@@ -7,9 +7,9 @@
 generate_penalties(gFDR, vFDR, pen_method, groups, alpha)
 }
 \arguments{
-\item{gFDR}{Defines the desired group FDR level, which determines the shape of the group penalties.}
+\item{gFDR}{Defines the desired group false discovery rate (FDR) level, which determines the shape of the group penalties.}
 
-\item{vFDR}{Defines the desired variable FDR level, which determines the shape of the variable penalties.}
+\item{vFDR}{Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties.}
 
 \item{pen_method}{The type of penalty sequences to use (see Feser et. al. (2023)):
 \itemize{
@@ -31,7 +31,7 @@ A list containing:
 Generates variable and group penalties for SGS.
 }
 \details{
-The vMean and vMax SGS sequences are variable sequences derived specifically to give variable FDR-control for SGS under orthogonal designs (see Feser et. al. (2023)).
+The vMean and vMax SGS sequences are variable sequences derived specifically to give variable false discovery rate (FDR) control for SGS under orthogonal designs (see Feser et. al. (2023)).
 The BH SLOPE sequence is derived in Bodgan et. al. (2015) and has links to the Benjamini-Hochberg critical values. The sequence provides variable FDR-control for SLOPE under orthogonal designs.
 The gMean gSLOPE sequence is derived in Brzyski et. al. (2015) and provides group FDR-control for gSLOPE under orthogonal designs.
 }

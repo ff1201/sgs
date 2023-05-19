@@ -27,7 +27,6 @@
 #' @importFrom stats sd
 #' @importFrom stats uniroot
 #' @importFrom stats ecdf
-#' @import RcppArmadillo
 ## usethis namespace: end
 
 NULL

@@ -1,5 +1,4 @@
 test_that("solution reduces to lasso when alpha=1 and constant weights, with no intercept or standardisation", {
-  options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   library(glmnet)
   n = 50
   p = 100
@@ -24,7 +23,6 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, with no 
 })
 
 test_that("solution reduces to lasso when alpha=1 and constant weights, with intercept", {
-  options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   library(glmnet)
   n = 50
   p = 100
@@ -50,7 +48,6 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, with int
 
 
 test_that("solution reduces to lasso when alpha=1 and constant weights, using standardisation but no intercept", {
-  options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   library(glmnet)
   n = 50
   p = 100
@@ -76,7 +73,6 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, using st
 })
 
 test_that("solution reduces to lasso when alpha=1 and constant weights, using standardisation and intercept", { # sd off by a very small amount
-  options(warn=-1) # to surpress warning about using SLOPE package for alpha = 1
   library(glmnet)
   n = 50
   p = 100
