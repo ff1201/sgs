@@ -1,6 +1,9 @@
 
 # sgs <a><img src='man/figures/logo.avif' align="right" height="139" /></a>
 
+[![CRAN status](https://www.r-pkg.org/badges/version/sgs)](https://CRAN.R-project.org/package=sgs)
+[![CRAN downloads this month](https://cranlogs.r-pkg.org/badges/sgs)](https://cran.r-project.org/package=sgs)
+
 Implementation of Sparse-group SLOPE (SGS), a sparse-group penalisation regression approach. SGS performs adaptive bi-level selection, controlling the FDR under orthogonal designs. Linear (Gaussian) and logistic (Binomial) regression are supported, both with dense and sparse matrix implementations. Cross-validation functionality is also supported. SGS is implemented using adaptive three operator splitting (ATOS) and the package also contains a general implementation of ATOS.
 
 A detailed description of SGS can be found in [F. Feser, M. Evangelou (2023) "Sparse-group SLOPE: adaptive bi-level selection with FDR-control"](https://arxiv.org/abs/2305.09467).
