@@ -15,7 +15,7 @@ You can install the current stable release from [CRAN](https://cran.r-project.or
 ``` r
 install.packages("sgs")
 ```
-Your R configuration must allow for a working Rcpp. To install a develop the development version from [GitHub](https://github.com/) run
+Your R configuration must allow for a working Rcpp. To install a develop the development version from GitHub run
 ``` r
 library(devtools)
 install_github("ff1201/sgs")
