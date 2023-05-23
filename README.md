@@ -11,8 +11,11 @@ A detailed description of SGS can be found in [F. Feser, M. Evangelou (2023) "Sp
 
 ## Installation
 
-An R package has been submitted. In the meantime, to install use the development version from [GitHub](https://github.com/):
-
+You can install the current stable release from [CRAN](https://cran.r-project.org/) with
+``` r
+install.packages("sgs")
+```
+Your R configuration must allow for a working Rcpp. To install a develop the development version from [GitHub](https://github.com/) run
 ``` r
 library(devtools)
 install_github("ff1201/sgs")
