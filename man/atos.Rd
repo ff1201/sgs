@@ -26,7 +26,7 @@ atos(
 )
 }
 \arguments{
-\item{X}{Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package)}
+\item{X}{Input matrix of dimensions \eqn{n \times p}{n*p}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package)}
 
 \item{y}{Output vector of dimension \eqn{n}. For \code{type="linear"} needs to be continuous and for \code{type="logistic"} needs to be a binary variable.}
 

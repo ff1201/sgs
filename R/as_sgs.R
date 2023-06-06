@@ -20,11 +20,11 @@
 
 #' fits the adaptively scaled SGS model (AS-SGS)
 #'
-#' Fits an SGS model using the noise estimation procedure, termed adaptively scaled SGS (Algorithm 2 from Feser et. al (2023)). 
+#' Fits an SGS model using the noise estimation procedure, termed adaptively scaled SGS (Algorithm 2 from Feser et al (2023)). 
 #' This adaptively estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to 
 #' cross-validation ([fit_sgs_cv()]). The approach is only compatible with the SGS penalties.
 #'
-#' @param X Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).
+#' @param X Input matrix of dimensions \eqn{n \times p}{n*p}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).
 #' @param y Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.
 #' @param groups A grouping structure for the input data. Should take the form of a vector of group indices.
 #' @param type The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.

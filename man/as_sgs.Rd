@@ -19,7 +19,7 @@ as_sgs(
 )
 }
 \arguments{
-\item{X}{Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).}
+\item{X}{Input matrix of dimensions \eqn{n \times p}{n*p}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).}
 
 \item{y}{Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.}
 
@@ -55,7 +55,7 @@ as_sgs(
 An object of type \code{"sgs"} containing model fit information (see \code{\link[=fit_sgs]{fit_sgs()}}).
 }
 \description{
-Fits an SGS model using the noise estimation procedure, termed adaptively scaled SGS (Algorithm 2 from Feser et. al (2023)).
+Fits an SGS model using the noise estimation procedure, termed adaptively scaled SGS (Algorithm 2 from Feser et al. (2023)).
 This adaptively estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to
 cross-validation (\code{\link[=fit_sgs_cv]{fit_sgs_cv()}}). The approach is only compatible with the SGS penalties.
 }

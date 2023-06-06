@@ -24,10 +24,10 @@
 #'
 #' Fits SGS models under a pathwise solution using adaptive three operator splitting (ATOS), picking the 1se model as optimum. Warm starts are implemented.
 #'
-#' @param X Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).
+#' @param X Input matrix of dimensions \eqn{n \times p}{n*p}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).
 #' @param y Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.
 #' @param groups A grouping structure for the input data. Should take the form of a vector of group indices.
-#' @param pen_method The type of penalty sequences to use (see Feser et. al. (2023)):
+#' @param pen_method The type of penalty sequences to use (see Feser et al. (2023)):
 #'   - \code{"1"} uses the vMean SGS and gMean gSLOPE sequences. 
 #'   - \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
 #'   - \code{"3"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.

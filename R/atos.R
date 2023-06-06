@@ -30,7 +30,7 @@
 #' The algorithm is not symmetrical, but usually the difference between variations are only small numerical values, which are filtered out.
 #' However, both variations should be checked regardless, by looking at \code{x} and \code{u}. An example for the sparse-group lasso (SGL) is given. 
 #'
-#' @param X Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package)
+#' @param X Input matrix of dimensions \eqn{n \times p}{n*p}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package)
 #' @param y Output vector of dimension \eqn{n}. For \code{type="linear"} needs to be continuous and for \code{type="logistic"} needs to be a binary variable.
 #' @param type The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.
 #' @param prox_1 The proximal operator for the first function, \eqn{h(x)}.

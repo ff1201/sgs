@@ -11,7 +11,7 @@ generate_penalties(gFDR, vFDR, pen_method, groups, alpha)
 
 \item{vFDR}{Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties.}
 
-\item{pen_method}{The type of penalty sequences to use (see Feser et. al. (2023)):
+\item{pen_method}{The type of penalty sequences to use (see Feser et al. (2023)):
 \itemize{
 \item \code{"1"} uses the vMean SGS and gMean gSLOPE sequences.
 \item \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.

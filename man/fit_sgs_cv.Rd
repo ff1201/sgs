@@ -30,13 +30,13 @@ fit_sgs_cv(
 )
 }
 \arguments{
-\item{X}{Input matrix of dimensions \eqn{p x n}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).}
+\item{X}{Input matrix of dimensions \eqn{n \times p}{n*p}. Can be a sparse matrix (using class \code{"sparseMatrix"} from the \code{Matrix} package).}
 
 \item{y}{Output vector of dimension \eqn{n}. For \code{type="linear"} should be continuous and for \code{type="logistic"} should be a binary variable.}
 
 \item{groups}{A grouping structure for the input data. Should take the form of a vector of group indices.}
 
-\item{pen_method}{The type of penalty sequences to use (see Feser et. al. (2023)):
+\item{pen_method}{The type of penalty sequences to use (see Feser et al. (2023)):
 \itemize{
 \item \code{"1"} uses the vMean SGS and gMean gSLOPE sequences.
 \item \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
