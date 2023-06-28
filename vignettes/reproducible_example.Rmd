@@ -94,7 +94,7 @@ Cross-validation is used to fit SGS models along a $\lambda$ path of length $20$
 cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
 ```
 
-The fitting verbose contains useful information, but wr cAside from the fitting verbose, we can see a more succinct summary by using the \texttt{print} function
+The fitting verbose contains useful information, showing the error for each $\lambda$ values, as well as the number of non-zero parameters. Aside from the fitting verbose, we can see a more succinct summary by using the \texttt{print} function
 
 ```{r}
 print(cv_model)
