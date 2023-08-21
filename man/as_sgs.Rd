@@ -55,7 +55,7 @@ as_sgs(
 An object of type \code{"sgs"} containing model fit information (see \code{\link[=fit_sgs]{fit_sgs()}}).
 }
 \description{
-Fits an SGS model using the noise estimation procedure, termed adaptively scaled SGS (Algorithm 2 from Feser et al. (2023)).
+Fits an SGS model using the noise estimation procedure, termed adaptively scaled SGS (Algorithm 2 from Feser et al (2023)).
 This adaptively estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to
 cross-validation (\code{\link[=fit_sgs_cv]{fit_sgs_cv()}}). The approach is only compatible with the SGS penalties.
 }

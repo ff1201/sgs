@@ -25,7 +25,6 @@ Suggests:
     SGL,
     gglasso,
     glmnet,
-    seagull,
     testthat,
     knitr,
     rmarkdown
