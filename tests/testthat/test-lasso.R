@@ -1,5 +1,5 @@
 test_that("solution reduces to lasso when alpha=1 and constant weights, with no intercept or standardisation", {
-  library(glmnet)
+  skip_if_not_installed("glmnet")
   n = 50
   p = 100
   data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
@@ -7,7 +7,7 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, with no 
   y <- data$y
   lambda = 0.8
   groups = 1:p
-  lasso <- glmnet(X, y, lambda = lambda, standardize = FALSE,family="gaussian",intercept=FALSE)
+  lasso <- glmnet::glmnet(X, y, lambda = lambda, standardize = FALSE,family="gaussian",intercept=FALSE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=1, alpha=1, vFDR=0.1, gFDR=0.1,standardise="none",intercept=FALSE,w_weights = rep(0,p),v_weights = rep(lambda,p),tol=1e-5)
     
@@ -23,7 +23,7 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, with no 
 })
 
 test_that("solution reduces to lasso when alpha=1 and constant weights, with intercept", {
-  library(glmnet)
+  skip_if_not_installed("glmnet")
   n = 50
   p = 100
   data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
@@ -31,7 +31,7 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, with int
   y <- data$y
   lambda = 0.8
   groups = 1:p
-  lasso <- glmnet(X, y, lambda = lambda, standardize = FALSE,family="gaussian",intercept=TRUE)
+  lasso <- glmnet::glmnet(X, y, lambda = lambda, standardize = FALSE,family="gaussian",intercept=TRUE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=1, alpha=1, vFDR=0.1, gFDR=0.1,standardise="none",intercept=TRUE,w_weights = rep(0,p),v_weights = rep(lambda,p),tol=1e-5)
     
@@ -48,7 +48,7 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, with int
 
 
 test_that("solution reduces to lasso when alpha=1 and constant weights, using standardisation but no intercept", {
-  library(glmnet)
+  skip_if_not_installed("glmnet")
   n = 50
   p = 100
   data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
@@ -57,7 +57,7 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, using st
   y <- data$y
   lambda = 0.8
   groups = 1:p
-  lasso <- glmnet(X, y, lambda = lambda, standardize = TRUE,family="gaussian",intercept=FALSE)
+  lasso <- glmnet::glmnet(X, y, lambda = lambda, standardize = TRUE,family="gaussian",intercept=FALSE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=1, alpha=1, vFDR=0.1, gFDR=0.1,standardise="sd",intercept=FALSE,w_weights = rep(0,p),v_weights = rep(lambda,p),tol=1e-5)
     
@@ -73,7 +73,7 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, using st
 })
 
 test_that("solution reduces to lasso when alpha=1 and constant weights, using standardisation and intercept", { # sd off by a very small amount
-  library(glmnet)
+  skip_if_not_installed("glmnet")
   n = 50
   p = 100
   data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
@@ -81,7 +81,7 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, using st
   y <- data$y
   lambda = 0.8
   groups = 1:p
-  lasso <- glmnet(X, y, lambda = lambda, standardize = TRUE,family="gaussian",intercept=TRUE)
+  lasso <- glmnet::glmnet(X, y, lambda = lambda, standardize = TRUE,family="gaussian",intercept=TRUE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=1, alpha=1, vFDR=0.1, gFDR=0.1,standardise="sd",intercept=TRUE,w_weights = rep(0,p),v_weights = rep(lambda,p),tol=1e-5)
     
