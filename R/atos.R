@@ -243,7 +243,6 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
   # generate output
   # ------------------------------------------------------------- 
   out = c()
-  out$x_beta = x
   if (max((x-z)^2) < 1e-3 & mean((x-z)^2) < 1e-3){ # if solutions are very similar, pick more stable version
     if (length(which(x!=0)) <= length(which(z!=0))){ # Picking the solution with less residual values, if this is true, x is picked
       out$beta = as.matrix(x)
@@ -257,7 +256,6 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
   # scale beta depending on transformations
   if (standardise!="none"){ 
     out$beta = out$beta/X_scale
-    out$x_beta = out$x_beta/X_scale
   }
 
   if (length(out$beta[out$beta!=0]) != 0){
@@ -276,7 +274,6 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
 
   if (intercept){ # get beta back to original scale
     out$beta = as.matrix(c(y_mean - sum(X_center*out$beta),out$beta))
-    out$x_beta = as.matrix(c(y_mean - sum(X_center*out$x_beta),out$x_beta))
   } 
 
   if (is.null(colnames(X))){ # Add variable names to output

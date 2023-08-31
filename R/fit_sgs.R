@@ -252,7 +252,6 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   out = c()
   x = fit_out$x
   z = fit_out$z
-  out$x_beta = x
   if (max((x-z)^2) < 1e-3 & mean((x-z)^2) < 1e-3){ # if solutions are very similar, pick more stable version
     if (length(which(x!=0)) <= length(which(z!=0))){ # Picking the solution with less residual values, if this is true, x is picked
       out$beta = as.matrix(x)
@@ -273,7 +272,6 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   # scale beta depending on transformations
   if (standardise != "none"){ 
     out$beta = out$beta/X_scale
-    out$x_beta = out$x_beta/X_scale
   }
 
   if (length(out$beta[out$beta!=0]) != 0){
@@ -296,10 +294,8 @@ fit_sgs <- function(X, y, groups, pen_method = 1, type="linear", lambda, alpha=0
   if (intercept){ # get beta back to original scale
     if (type == "linear"){
     out$beta = as.matrix(c(y_mean - sum(X_center*out$beta),out$beta))
-    out$x_beta = as.matrix(c(y_mean - sum(X_center*out$x_beta),out$x_beta))
     } else {
     out$beta = as.matrix(c(log_intercept,out$beta))
-    out$x_beta = as.matrix(c(log_intercept,out$x_beta))
     }
   } 
 
