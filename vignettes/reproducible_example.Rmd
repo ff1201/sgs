@@ -1,21 +1,21 @@
 ---
-title: "SGS reproducible example"
+  title: "SGS reproducible example"
 output: rmarkdown::html_vignette
 author: "Fabio Feser"
 date: "`r Sys.Date()`"
 vignette: >
   %\VignetteIndexEntry{SGS reproducible example}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+%\VignetteEngine{knitr::rmarkdown}
+%\VignetteEncoding{UTF-8}
 ---
-
-```{r setup, include=FALSE}
+  
+  ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,message=FALSE ,warning=FALSE)
 ```
 
 # Introduction
 
-Sparse-group SLOPE (SGS) is a penalised regression approach that performs bi-level selection with FDR control under orthogonal designs. SGS is described in detail in .
+Sparse-group SLOPE (SGS) is a penalised regression approach that performs bi-level selection with FDR control under orthogonal designs. SGS is described in detail in  [F. Feser, M. Evangelou (2023) "Sparse-group SLOPE: adaptive bi-level selection with FDR-control"](https://arxiv.org/abs/2305.09467).
 
 The method is implemented in the `sgs` R package. The package has implementations for Gaussian and Binomial responses, both of which are demonstrated here.
 
@@ -23,7 +23,7 @@ The method is implemented in the `sgs` R package. The package has implementation
 
 ### Data
 
-For this example, a $400\times 500$ input matrix is used with a simple grouping structure, sampled from a multivariate Gaussian distribution with no correlation. 
+For this example, a $400 \times 500$ input matrix is used with a simple grouping structure, sampled from a multivariate Gaussian distribution with no correlation. 
 
 ```{r}
 library(sgs)
@@ -58,7 +58,7 @@ model$selected_group
 ```
 
 Defining a function that lets us calculate various metrics (including the FDR and sensitivity):
-```{r}
+  ```{r}
 fdr_sensitivity = function(fitted_ids, true_ids,num_coef){
   # calculates FDR, FPR, and sensitivity
   num_true = length(intersect(fitted_ids,true_ids))
@@ -89,7 +89,7 @@ The model is currently too sparse, as our choice of $\lambda$ is too high. We ca
 
 ### Cross validation
 
-Cross-validation is used to fit SGS models along a $\lambda$ path of length $20$. The first value, $\lambda_\text{max}$, is chosen to give the null model and the path is terminated at $\lambda_\text{min} = min_frac \dot \lambda_\text{max}$. The 1se rule (as in the \texttt{glmnet} package) is used to choose the optimal model.
+Cross-validation is used to fit SGS models along a $\lambda$ path of length $20$. The first value, $\lambda_\text{max}$, is chosen to give the null model and the path is terminated at $\lambda_\text{min} = \delta \dot \lambda_\text{max}$, where $\delta$ is some value between 0 and 1 (given by \texttt{min_frac} in the function). The 1se rule (as in the \texttt{glmnet} package) is used to choose the optimal model.
 ```{r}
 cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
 ```
@@ -100,7 +100,13 @@ The fitting verbose contains useful information, showing the error for each $\la
 print(cv_model)
 ```
 
-The best model is found to be the one at the end of the path. Checking the metrics again, we see how CV has generated a model with the correct amount of sparsity that gives FDR levels below the specified values.
+The best model is found to be the one at the end of the path:
+
+```{r}
+cv_model$best_lambda_id
+```
+
+Checking the metrics again, we see how CV has generated a model with the correct amount of sparsity that gives FDR levels below the specified values.
 
 ```{r}
 fdr_sensitivity(fitted_ids = cv_model$fit$selected_var, true_ids = data$true_var_id, num_coef = 500)
@@ -115,7 +121,7 @@ plot(cv_model,how_many = 10)
 
 ### Prediction
 
-The package has an implemented predict function, to allow for easy prediction
+The package has an implemented predict function to allow for easy prediction
 ```{r}
 predict(model,data$X,type="linear")[1:5]
 ```
@@ -126,7 +132,7 @@ As mentioned, the package can also be used to fit SGS to a Binomial response. Fi
 
 ```{r}
 sigmoid = function(x) {
-   1 / (1 + exp(-x))
+  1 / (1 + exp(-x))
 }
 y = ifelse(sigmoid(data$X %*% data$true_beta + rnorm(400))>0.5,1,0)
 train_y = y[1:350] 
