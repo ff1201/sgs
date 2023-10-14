@@ -1,15 +1,15 @@
 ---
-  title: "SGS reproducible example"
+title: "SGS reproducible example"
 output: rmarkdown::html_vignette
 author: "Fabio Feser"
 date: "`r Sys.Date()`"
 vignette: >
   %\VignetteIndexEntry{SGS reproducible example}
-%\VignetteEngine{knitr::rmarkdown}
-%\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
   
-  ```{r setup, include=FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,message=FALSE ,warning=FALSE)
 ```
 
@@ -58,7 +58,7 @@ model$selected_group
 ```
 
 Defining a function that lets us calculate various metrics (including the FDR and sensitivity):
-  ```{r}
+```{r}
 fdr_sensitivity = function(fitted_ids, true_ids,num_coef){
   # calculates FDR, FPR, and sensitivity
   num_true = length(intersect(fitted_ids,true_ids))
