@@ -2,31 +2,32 @@
 % Please edit documentation in R/fit_sgs_cv.R
 \name{fit_sgs_cv}
 \alias{fit_sgs_cv}
-\title{fit an SGS model using CV}
+\title{Fit an SGS model using k-fold cross-validation.}
 \usage{
 fit_sgs_cv(
   X,
   y,
   groups,
-  pen_method = 1,
   type = "linear",
-  nlambda = 20,
-  nfolds = 10,
+  lambda = "path",
+  path_length = 20,
+  min_frac = 0.05,
   alpha = 0.95,
   vFDR = 0.1,
   gFDR = 0.1,
+  pen_method = 1,
+  nfolds = 10,
   backtracking = 0.7,
   max_iter = 5000,
   max_iter_backtracking = 100,
   tol = 1e-05,
-  min_frac = 0.05,
   standardise = "l2",
   intercept = TRUE,
+  error_criteria = "mse",
+  screen = TRUE,
   verbose = FALSE,
   v_weights = NULL,
-  w_weights = NULL,
-  error_criteria = "mse",
-  max_lambda = NULL
+  w_weights = NULL
 )
 }
 \arguments{
@@ -36,24 +37,32 @@ fit_sgs_cv(
 
 \item{groups}{A grouping structure for the input data. Should take the form of a vector of group indices.}
 
-\item{pen_method}{The type of penalty sequences to use (see Feser et al. (2023)):
+\item{type}{The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.}
+
+\item{lambda}{The regularisation parameter. Defines the level of sparsity in the model. A higher value leads to sparser models:
+\itemize{
+\item \code{"path"} computes a path of regularisation parameters of length \code{"path_length"}. The path will begin just above the value at which the first predictor enters the model and will terminate at the value determined by \code{"min_frac"}.
+\item User-specified single value or sequence. Internal scaling is applied based on the type of standardisation. The returned \code{"lambda"} value will be the original unscaled value(s).
+}}
+
+\item{path_length}{The number of \eqn{\lambda} values to fit the model for. If \code{"lambda"} is user-specified, this is ignored.}
+
+\item{min_frac}{Defines the termination point of the pathwise solution, so that \eqn{\lambda_\text{min} = min_frac \cdot \lambda_\text{max}}.}
+
+\item{alpha}{The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1. Recommended value is 0.95.}
+
+\item{vFDR}{Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties. Must be between 0 and 1.}
+
+\item{gFDR}{Defines the desired group false discovery rate (FDR) level, which determines the shape of the group penalties. Must be between 0 and 1.}
+
+\item{pen_method}{The type of penalty sequences to use (see Feser and Evangelou (2023)):
 \itemize{
 \item \code{"1"} uses the vMean SGS and gMean gSLOPE sequences.
 \item \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
 \item \code{"3"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
 }}
 
-\item{type}{The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.}
-
-\item{nlambda}{The number of pathwise \eqn{\lambda} values to fit.}
-
 \item{nfolds}{The number of folds to use in cross-validation.}
-
-\item{alpha}{The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.}
-
-\item{vFDR}{Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties. Must be between 0 and 1.}
-
-\item{gFDR}{Defines the desired group false discovery rate (FDR) level, which determines the shape of the group penalties. Must be between 0 and 1.}
 
 \item{backtracking}{The backtracking parameter, \eqn{\tau}, as defined in Pedregosa et. al. (2018).}
 
@@ -62,8 +71,6 @@ fit_sgs_cv(
 \item{max_iter_backtracking}{Maximum number of backtracking line search iterations to perform per global iteration.}
 
 \item{tol}{Convergence tolerance for the stopping criteria.}
-
-\item{min_frac}{Defines the termination point of the pathwise solution, so that \eqn{\lambda_\text{min} = min_frac \cdot \lambda_\text{max}}.}
 
 \item{standardise}{Type of standardisation to perform on \code{X}:
 \itemize{
@@ -75,15 +82,15 @@ fit_sgs_cv(
 
 \item{intercept}{Logical flag for whether to fit an intercept.}
 
+\item{error_criteria}{The criteria used to discriminate between models along the path. Supported values are: \code{"mse"} (mean squared error) and \code{"mae"} (mean absolute error).}
+
+\item{screen}{Logical flag for whether to apply screening rules (see Feser and Evangelou (2024)). Screening discards irrelevant groups before fitting, greatly improving speed.}
+
 \item{verbose}{Logical flag for whether to print fitting information.}
 
 \item{v_weights}{Optional vector for the variable penalty weights. Overrides the penalties from pen_method if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}}
 
 \item{w_weights}{Optional vector for the group penalty weights. Overrides the penalties from pen_method if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}}
-
-\item{error_criteria}{The criteria used to discriminate between models along the path. Supported values are: \code{"mse"} (mean squared error) and \code{"mae"} (mean absolute error).}
-
-\item{max_lambda}{Optional parameter, \eqn{\lambda_\text{max}}, which is used to fit the first model on the path. If not specificed, it is chosen to be just above the value which lets in the first variable (so that it is the null model).}
 }
 \value{
 A list containing:
@@ -104,14 +111,22 @@ Fits SGS models under a pathwise solution using adaptive three operator splittin
 # specify a grouping structure
 groups = c(1,1,1,2,2,3,3,3,4,4)
 # generate data
-data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
+data =  gen_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
 # run SGS with cross-validation (the proximal functions can be found in utils.R)
 cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", 
-nlambda = 5, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, 
+path_length = 5, nfolds=5, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, 
 standardise="l2",intercept=TRUE,verbose=TRUE)
 }
 \references{
-F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
+Feser, F., Evangelou, M. (2023). \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
 
-F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://arxiv.org/abs/2405.15357}
 }
+\seealso{
+\code{\link[=fit_sgs]{fit_sgs()}}
+
+Other model-selection, SGS-methods: 
+\code{\link{as_sgs}()},
+\code{\link{scaled_sgs}()}
+}
+\concept{model-selection, SGS-methods}

@@ -27,6 +27,7 @@
 #' @importFrom stats sd
 #' @importFrom stats uniroot
 #' @importFrom stats ecdf
+#' @importFrom stats prcomp
 ## usethis namespace: end
 
 NULL

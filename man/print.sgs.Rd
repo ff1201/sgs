@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.R
 \name{print.sgs}
 \alias{print.sgs}
-\title{print a \code{"sgs"} object}
+\title{Print a \code{"sgs"} object.}
 \usage{
 \method{print}{sgs}(x, ...)
 }
@@ -12,7 +12,7 @@
 \item{...}{further arguments passed to base function.}
 }
 \value{
-A summary of the model fit.
+A summary of the model fit(s).
 }
 \description{
 Performs prediction from an \code{\link[=fit_sgs]{fit_sgs()}} model fit.
@@ -25,7 +25,7 @@ groups = c(rep(1:20, each=3),
           rep(61:80, each=6),
           rep(81:100, each=7))
 # generate data
-data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+data =  gen_toy_data(p=500, n=400, groups = groups, seed_id=3)
 # run SGS 
 model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
 vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
@@ -33,10 +33,11 @@ vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 print(model)
 }
 \seealso{
-\code{\link[=fit_sgs]{fit_sgs()}}, \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}
+\code{\link[=fit_sgs]{fit_sgs()}}, \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}, \code{\link[=fit_gslope]{fit_gslope()}}, \code{\link[=fit_gslope_cv]{fit_gslope_cv()}}
 
-Other SGS-methods: 
-\code{\link{plot.sgs_cv}()},
+Other SGS-methods, gSLOPE-methods: 
+\code{\link{coef.sgs}()},
+\code{\link{plot.sgs}()},
 \code{\link{predict.sgs}()}
 }
-\concept{SGS-methods}
+\concept{SGS-methods, gSLOPE-methods}

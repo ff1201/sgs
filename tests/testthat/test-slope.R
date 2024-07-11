@@ -1,13 +1,13 @@
 test_that("solution reduces to slope when alpha=1, with no intercept or standardisation", {
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
   groups=1:p
 
-  slope <- SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=FALSE,solver="admm",screen=FALSE,scale="none",center=FALSE)
+  slope = SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=FALSE,solver="admm",screen=FALSE,scale="none",center=FALSE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=1, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="none")
   
@@ -25,13 +25,13 @@ test_that("solution reduces to slope when alpha=1, with no intercept or standard
 test_that("solution reduces to slope when alpha=1, with intercept but no standardisation", {
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
   groups=1:p
 
-  slope <- SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=TRUE,solver="admm",screen=FALSE,scale="none",center=TRUE)
+  slope = SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=TRUE,solver="admm",screen=FALSE,scale="none",center=TRUE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=1, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="none")
   
@@ -49,13 +49,13 @@ test_that("solution reduces to slope when alpha=1, with intercept but no standar
 test_that("solution reduces to slope when alpha=1, with no intercept but sd standardisation", { # again, sd off by a small amount
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
   groups=1:p
 
-  slope <- SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=FALSE,solver="admm",screen=FALSE,scale="sd",center=TRUE)
+  slope = SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=FALSE,solver="admm",screen=FALSE,scale="sd",center=TRUE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=1, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="sd")
   
@@ -73,13 +73,13 @@ test_that("solution reduces to slope when alpha=1, with no intercept but sd stan
 test_that("solution reduces to slope when alpha=1, with no intercept but l1 standardisation", {
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
   groups=1:p
 
-  slope <- SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=FALSE,solver="admm",screen=FALSE,scale="l1",center=TRUE)
+  slope = SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=FALSE,solver="admm",screen=FALSE,scale="l1",center=TRUE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=1, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="l1")
   
@@ -97,13 +97,13 @@ test_that("solution reduces to slope when alpha=1, with no intercept but l1 stan
 test_that("solution reduces to slope when alpha=1, with no intercept but l2 standardisation", {
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
   groups=1:p
 
-  slope <- SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=FALSE,solver="admm",screen=FALSE,scale="l2",center=TRUE)
+  slope = SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=FALSE,solver="admm",screen=FALSE,scale="l2",center=TRUE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=1, vFDR=0.1, gFDR=0.1,intercept=FALSE,standardise="l2")
   
@@ -121,13 +121,13 @@ test_that("solution reduces to slope when alpha=1, with no intercept but l2 stan
 test_that("solution reduces to slope when alpha=1, with intercept and sd standardisation", {
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
   groups=1:p
 
-  slope <- SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=TRUE,solver="admm",screen=FALSE,scale="sd",center=TRUE)
+  slope = SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=TRUE,solver="admm",screen=FALSE,scale="sd",center=TRUE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=1, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="sd")
   
@@ -145,13 +145,13 @@ test_that("solution reduces to slope when alpha=1, with intercept and sd standar
 test_that("solution reduces to slope when alpha=1, with intercept and l1 standardisation", {
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
   groups=1:p
 
-  slope <- SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=TRUE,solver="admm",screen=FALSE,scale="l1",center=TRUE)
+  slope = SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=TRUE,solver="admm",screen=FALSE,scale="l1",center=TRUE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=1, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="l1")
   
@@ -169,13 +169,13 @@ test_that("solution reduces to slope when alpha=1, with intercept and l1 standar
 test_that("solution reduces to slope when alpha=1, with intercept and l2 standardisation", {
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda=0.8
   groups=1:p
 
-  slope <- SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=TRUE,solver="admm",screen=FALSE,scale="l2",center=TRUE)
+  slope = SLOPE::SLOPE(X, y, family = "gaussian", alpha = lambda, q=0.1,intercept=TRUE,solver="admm",screen=FALSE,scale="l2",center=TRUE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=lambda, alpha=1, vFDR=0.1, gFDR=0.1,intercept=TRUE,standardise="l2")
   

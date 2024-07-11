@@ -18,41 +18,56 @@
 #
 ###############################################################################
 
-#' plot a `"sgs_cv"` object
+#' Plot models of the following object types: `"sgs"`, `"sgs_cv"`, `"gslope"`, `"gslope_cv"`.
 #'
-#' Plots the pathwise solution of a cross-validation fit, from a call to [fit_sgs_cv()] 
+#' Plots the pathwise solution of a cross-validation fit, from a call to one of the following: [fit_sgs()], [fit_sgs_cv()], [fit_gslope()], [fit_gslope_cv()].
 #'
-#' @param x Object an object of class \code{"sgs_cv"} from a call to [fit_sgs()].
+#' @param x Object of one of the following classes: \code{"sgs"}, \code{"sgs_cv"}, \code{"gslope"}, \code{"gslope_cv"}.
 #' @param how_many Defines how many predictors to plot. Plots the predictors in decreasing order of largest absolute value.
 #' @param ... further arguments passed to base function.
 #' 
-#' @seealso [fit_sgs_cv()]
-#' @family SGS-methods
+#' @seealso [fit_sgs()], [fit_sgs_cv()], [fit_gslope()], [fit_gslope_cv()]
+#' @family SGS-methods, gSLOPE-methods
 #' 
 #' @return A list containing:
 #' \item{response}{The predicted response. In the logistic case, this represents the predicted class probabilities.}
-#' \item{class}{The predicted class assignments. Only returned if type = "logistic" in the \code{"sgs"} object.}
+#' \item{class}{The predicted class assignments. Only returned if type = "logistic" in the model object.}
 #'
 #' @examples
 #' # specify a grouping structure
 #' groups = c(1,1,2,2,3)
 #' # generate data
-#' data = generate_toy_data(p=5, n=4, groups = groups, seed_id=3,signal_mean=20,group_sparsity=1)
+#' data =  gen_toy_data(p=5, n=4, groups = groups, seed_id=3,signal_mean=20,group_sparsity=1)
 #' # run SGS 
-#' cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", 
-#' nlambda = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, 
+#' model = fit_sgs(X = data$X, y = data$y, groups=groups, type = "linear", 
+#' path_length = 20, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, 
 #' min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=FALSE)
-#' plot(cv_model, how_many = 10)
-#' @export
+#' plot(model, how_many = 10)
 
+#' @method plot sgs
+#' @export
+plot.sgs <- function(x, how_many = 10, ...){ 
+  beta_matrix = as.matrix(x$beta)
+  plot_path(beta_matrix=beta_matrix,lambdas=x$lambda,how_many=how_many,main="Pathwise solution")
+}
+
+#' @method plot sgs_cv
+#' @export
 plot.sgs_cv <- function(x, how_many = 10, ...){ 
-  beta_matrix = matrix(0,nrow=length(x$fit$z),ncol=length(x$errors$lambda))
-  for (i in 1:length(x$errors$lambda)){
-    if (x$fit$intercept){
-      beta_matrix[,i] = as.vector(x$all_models[[i]]$beta[-1])
-    } else {
-      beta_matrix[,i] = as.vector(x$all_models[[i]]$beta)
-    }
-  }
+  beta_matrix = as.matrix(x$all_models$beta)
+  plot_path(beta_matrix=beta_matrix,lambdas=x$errors$lambda,how_many=how_many,main="Pathwise solution")
+}
+
+#' @method plot gslope
+#' @export
+plot.gslope <- function(x, how_many = 10, ...){ 
+  beta_matrix = as.matrix(x$beta)
+  plot_path(beta_matrix=beta_matrix,lambdas=x$lambda,how_many=how_many,main="Pathwise solution")
+}
+
+#' @method plot gslope_cv
+#' @export
+plot.gslope_cv <- function(x, how_many = 10, ...){ 
+  beta_matrix = as.matrix(x$all_models$beta)
   plot_path(beta_matrix=beta_matrix,lambdas=x$errors$lambda,how_many=how_many,main="Pathwise solution")
 }

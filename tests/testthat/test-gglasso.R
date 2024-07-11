@@ -7,7 +7,7 @@ test_that("solution reduces to grplasso when alpha=0 and constant weights, with 
            rep(17:22,each=6))
   p=100
   n=50
-  data = generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = TRUE,groups = groups,group_sparsity=0.2,var_sparsity=1,orthogonal = FALSE)
+  data = gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = TRUE,groups = groups,group_sparsity=0.2,var_sparsity=1,orthogonal = FALSE)
   X = data$X
   y = data$y
   lambda = 0.8
@@ -30,7 +30,7 @@ test_that("solution reduces to grplasso when alpha=0 and constant weights, with 
   groups = rep(1:20,each=5)
   p=100
   n=50
-  data = generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = TRUE,groups = groups,group_sparsity=0.2,var_sparsity=1,orthogonal = FALSE)
+  data = gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = TRUE,groups = groups,group_sparsity=0.2,var_sparsity=1,orthogonal = FALSE)
   X = data$X
   y = data$y
   lambda = 0.8
@@ -56,7 +56,7 @@ test_that("solution reduces to grplasso when alpha=0 and constant weights, with 
            rep(17:22,each=6))
   p=100
   n=50
-  data = generate_toy_data(p=p,n=n,rho = 0,seed_id = 4,grouped = TRUE,groups = groups,group_sparsity=0.2,var_sparsity=1,orthogonal = FALSE)
+  data = gen_toy_data(p=p,n=n,rho = 0,seed_id = 4,grouped = TRUE,groups = groups,group_sparsity=0.2,var_sparsity=1,orthogonal = FALSE)
   X = data$X
   y = data$y
   lambda = 0.8
@@ -79,7 +79,7 @@ test_that("solution reduces to grplasso when alpha=0 and constant weights, with 
   groups = rep(1:20,each=5)
   p=100
   n=50
-  data = generate_toy_data(p=p,n=n,rho = 0,seed_id = 100,grouped = TRUE,groups = groups,group_sparsity=0.2,var_sparsity=1,orthogonal = FALSE)
+  data = gen_toy_data(p=p,n=n,rho = 0,seed_id = 100,grouped = TRUE,groups = groups,group_sparsity=0.2,var_sparsity=1,orthogonal = FALSE)
   X = data$X
   y = data$y
   lambda = 0.8

@@ -2,7 +2,7 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, with no 
   skip_if_not_installed("glmnet")
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda = 0.8
@@ -26,7 +26,7 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, with int
   skip_if_not_installed("glmnet")
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda = 0.8
@@ -51,7 +51,7 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, using st
   skip_if_not_installed("glmnet")
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   X = scale(X,center=TRUE,scale=FALSE) # intercept=TRUE centers X in glmnet
   y <- data$y
@@ -76,12 +76,12 @@ test_that("solution reduces to lasso when alpha=1 and constant weights, using st
   skip_if_not_installed("glmnet")
   n = 50
   p = 100
-  data= generate_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
+  data= gen_toy_data(p=p,n=n,rho = 0,seed_id = 3,grouped = FALSE,var_sparsity=0.2,orthogonal = FALSE)
   X <- data$X
   y <- data$y
   lambda = 0.8
   groups = 1:p
-  lasso <- glmnet::glmnet(X, y, lambda = lambda, standardize = TRUE,family="gaussian",intercept=TRUE)
+  lasso = glmnet::glmnet(X, y, lambda = lambda, standardize = TRUE,family="gaussian",intercept=TRUE)
   
   sgs = fit_sgs(X=X,y=y, groups=groups, type="linear", lambda=1, alpha=1, vFDR=0.1, gFDR=0.1,standardise="sd",intercept=TRUE,w_weights = rep(0,p),v_weights = rep(lambda,p),tol=1e-5)
     

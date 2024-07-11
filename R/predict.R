@@ -18,16 +18,16 @@
 #
 ###############################################################################
 
-#' predict using a \code{"sgs"} object
+#' Predict using one of the following object types: `"sgs"`, `"sgs_cv"`, `"gslope"`, `"gslope_cv"`.
 #'
-#' Performs prediction from an [fit_sgs()] model fit.
+#' Performs prediction from one of the following fits: [fit_sgs()], [fit_sgs_cv()], [fit_gslope()], [fit_gslope_cv()]. The predictions are calculated for each \code{"lambda"} value in the path.
 #'
-#' @param object an object of class \code{"sgs"} from a call to [fit_sgs()].
+#' @param object Object of one of the following classes: \code{"sgs"}, \code{"sgs_cv"}, \code{"gslope"}, \code{"gslope_cv"}.
 #' @param x Input data to use for prediction.
 #' @param ... further arguments passed to stats function.
 #' 
-#' @seealso [fit_sgs()]
-#' @family SGS-methods
+#' @seealso [fit_sgs()], [fit_sgs_cv()], [fit_gslope()], [fit_gslope_cv()]
+#' @family SGS-methods, gSLOPE-methods
 #' 
 #' @return A list containing:
 #' item{response}{The predicted response. In the logistic case, this represents the predicted class probabilities.}
@@ -37,32 +37,93 @@
 #' # specify a grouping structure
 #' groups = c(1,1,1,2,2,3,3,3,4,4)
 #' # generate data
-#' data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
+#' data =  gen_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
 #' # run SGS 
 #' model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
 #' vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 #' # use predict function
 #' model_predictions = predict(model, x = data$X)
-#' @export
-#' @method predict sgs
 
+#' @method predict sgs
+#' @export
 predict.sgs <- function(object, x, ...){
   if (object$type=="linear"){
     if (object$intercept){
-    predictions = arma_mv(cbind(1,x),as.vector(object$beta))
+      predictions = apply(object$beta, 2, function(z) arma_mv(Matrix::cbind2(1,x),as.vector(z)))
     } else {
-      predictions = arma_mv(x,as.vector(object$beta))
+      predictions = apply(object$beta, 2, function(z) arma_mv(x,as.vector(z)))
     }
   } else if (object$type == "logistic"){
     predictions = c()
     if (object$intercept){
-      predictions$response = sigmoid(arma_mv(cbind(1,x),as.vector(object$beta)))
+      predictions$response = apply(object$beta, 2, function(z) sigmoid(arma_mv(Matrix::cbind2(1,x),as.vector(z))))
     } else {
-      predictions$response = sigmoid(arma_mv(x,as.vector(object$beta)))
+      predictions$response = apply(object$beta, 2, function(z) sigmoid(arma_mv(x,as.vector(z))))
     }
     predictions$class = ifelse(predictions$response>0.5,1,0)
-  } else {
-       stop("not a valid type")
+  } 
+  return(predictions)
+}
+
+#' @method predict sgs_cv
+#' @export
+predict.sgs_cv <-  function(object, x, ...){
+  if (object$fit$type=="linear"){
+    if (object$fit$intercept){
+      predictions = apply(object$all_models$beta, 2, function(z) arma_mv(Matrix::cbind2(1,x),as.vector(z)))
+    } else {
+      predictions = apply(object$all_models$beta, 2, function(z) arma_mv(x,as.vector(z)))
+    }
+  } else if (object$fit$type == "logistic"){
+    predictions = c()
+    if (object$fit$intercept){
+      predictions$response = apply(object$all_models$beta, 2, function(z) sigmoid(arma_mv(Matrix::cbind2(1,x),as.vector(z))))
+    } else {
+      predictions$response = apply(object$all_models$beta, 2, function(z) sigmoid(arma_mv(x,as.vector(z))))
+    }
+    predictions$class = ifelse(predictions$response>0.5,1,0)
+  }
+  return(predictions)
+}
+
+#' @method predict gslope
+#' @export
+predict.gslope <- function(object, x, ...){
+  if (object$type=="linear"){
+    if (object$intercept){
+      predictions = apply(object$beta, 2, function(z) arma_mv(Matrix::cbind2(1,x),as.vector(z)))
+    } else {
+      predictions = apply(object$beta, 2, function(z) arma_mv(x,as.vector(z)))
+    }
+  } else if (object$type == "logistic"){
+    predictions = c()
+    if (object$intercept){
+      predictions$response = apply(object$beta, 2, function(z) sigmoid(arma_mv(Matrix::cbind2(1,x),as.vector(z))))
+    } else {
+      predictions$response = apply(object$beta, 2, function(z) sigmoid(arma_mv(x,as.vector(z))))
+    }
+    predictions$class = ifelse(predictions$response>0.5,1,0)
+  } 
+  return(predictions)
+}
+
+#' @method predict gslope_cv
+#' @export
+predict.gslope_cv <-  function(object, x, ...){
+  if (object$fit$type=="linear"){
+    if (object$fit$intercept){
+      predictions = apply(object$all_models$beta, 2, function(z) arma_mv(Matrix::cbind2(1,x),as.vector(z)))
+    } else {
+      predictions = apply(object$all_models$beta, 2, function(z) arma_mv(x,as.vector(z)))
+    }
+  } else if (object$fit$type == "logistic"){
+    predictions = c()
+    if (object$fit$intercept){
+      predictions$response = apply(object$all_models$beta, 2, function(z) sigmoid(arma_mv(Matrix::cbind2(1,x),as.vector(z))))
+    } else {
+      predictions$response = apply(object$all_models$beta, 2, function(z) sigmoid(arma_mv(x,as.vector(z))))
+    }
+    predictions$class = ifelse(predictions$response>0.5,1,0)
   }
   return(predictions)
 }

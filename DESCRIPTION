@@ -1,11 +1,11 @@
 Package: sgs
 Title: Sparse-Group SLOPE: Adaptive Bi-Level Selection with FDR Control
-Version: 0.1.1
-Date: 2023-08-21
+Version: 0.2.0
+Date: 2024-05-01
 Authors@R: c(person("Fabio", "Feser", role = c("aut", "cre"), email = "ff120@ic.ac.uk",comment = c(ORCID = "0009-0007-3088-9727")),
              person("Marina", "Evangelou", role =c("aut"), comment = c(ORCID = "0000-0003-0789-8944")))
 Maintainer: Fabio Feser <ff120@ic.ac.uk>
-Description: Implementation of Sparse-group SLOPE: Adaptive bi-level with FDR-control (Feser et al. (2023) <arXiv:2305.09467>). Linear and logistic regression models are supported, both of which can be fit using k-fold cross-validation. Dense and sparse input matrices are supported. In addition, a general adaptive three operator splitting (ATOS) implementation is provided.
+Description: Implementation of Sparse-group SLOPE (SGS) (Feser and Evangelou (2023) <arXiv:2305.09467>) models. Linear and logistic regression models are supported, both of which can be fit using k-fold cross-validation. Dense and sparse input matrices are supported. In addition, a general adaptive three operator splitting (ATOS) implementation is provided. Group SLOPE (gSLOPE) (Brzyski et al. (2019) <doi.org/10.1080/01621459.2017.1411269>) models are also implemented. Both gSLOPE and SGS are available with strong screening rules (Feser and Evangelou (2024) <arXiv:2405.15357>) for computational speed-up.
 Imports:
     Matrix,
     MASS,
@@ -27,9 +27,10 @@ Suggests:
     glmnet,
     testthat,
     knitr,
+    grpSLOPE,
     rmarkdown
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 License: GPL (>= 3)
 Encoding: UTF-8
 URL: https://github.com/ff1201/sgs

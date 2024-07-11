@@ -11,3 +11,13 @@ arma_mv <- function(m, v) {
     .Call(`_sgs_arma_mv`, m, v)
 }
 
+#' Matrix Product in RcppArmadillo.
+#'
+#' @param m numeric sparse matrix
+#' @param v numeric vector
+#' @return matrix product of m and v
+#' @export
+arma_sparse <- function(m, v) {
+    .Call(`_sgs_arma_sparse`, m, v)
+}
+

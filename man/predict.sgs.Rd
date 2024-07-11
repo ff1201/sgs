@@ -2,12 +2,12 @@
 % Please edit documentation in R/predict.R
 \name{predict.sgs}
 \alias{predict.sgs}
-\title{predict using a \code{"sgs"} object}
+\title{Predict using one of the following object types: \code{"sgs"}, \code{"sgs_cv"}, \code{"gslope"}, \code{"gslope_cv"}.}
 \usage{
 \method{predict}{sgs}(object, x, ...)
 }
 \arguments{
-\item{object}{an object of class \code{"sgs"} from a call to \code{\link[=fit_sgs]{fit_sgs()}}.}
+\item{object}{Object of one of the following classes: \code{"sgs"}, \code{"sgs_cv"}, \code{"gslope"}, \code{"gslope_cv"}.}
 
 \item{x}{Input data to use for prediction.}
 
@@ -19,13 +19,13 @@ item{response}{The predicted response. In the logistic case, this represents the
 item{class}{The predicted class assignments. Only returned if type = "logistic" in the \code{"sgs"} object.}
 }
 \description{
-Performs prediction from an \code{\link[=fit_sgs]{fit_sgs()}} model fit.
+Performs prediction from one of the following fits: \code{\link[=fit_sgs]{fit_sgs()}}, \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}, \code{\link[=fit_gslope]{fit_gslope()}}, \code{\link[=fit_gslope_cv]{fit_gslope_cv()}}. The predictions are calculated for each \code{"lambda"} value in the path.
 }
 \examples{
 # specify a grouping structure
 groups = c(1,1,1,2,2,3,3,3,4,4)
 # generate data
-data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
+data =  gen_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
 # run SGS 
 model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
 vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
@@ -33,10 +33,11 @@ vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 model_predictions = predict(model, x = data$X)
 }
 \seealso{
-\code{\link[=fit_sgs]{fit_sgs()}}
+\code{\link[=fit_sgs]{fit_sgs()}}, \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}, \code{\link[=fit_gslope]{fit_gslope()}}, \code{\link[=fit_gslope_cv]{fit_gslope_cv()}}
 
-Other SGS-methods: 
-\code{\link{plot.sgs_cv}()},
+Other SGS-methods, gSLOPE-methods: 
+\code{\link{coef.sgs}()},
+\code{\link{plot.sgs}()},
 \code{\link{print.sgs}()}
 }
-\concept{SGS-methods}
+\concept{SGS-methods, gSLOPE-methods}

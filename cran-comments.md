@@ -1,7 +1,9 @@
-## R CMD check results
-
-0 errors | 0 warnings | 1 note
-
 ## Submission 0.1.1
-* Removed use of seagull package, which has become available. 
+* Removed use of seagull package, which has become unavailable. 
 * Fixed various minor typos in documentation.
+
+## Submission 0.2.0
+* Added screening rules for SGS and gSLOPE.
+* General speed improvements.
+* Implemented path fitting.
+* Added grpSLOPE tests back in, which has become available again.

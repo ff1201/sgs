@@ -2,29 +2,30 @@
 % Please edit documentation in R/fit_sgs.R
 \name{fit_sgs}
 \alias{fit_sgs}
-\title{fit an SGS model}
+\title{Fit an SGS model.}
 \usage{
 fit_sgs(
   X,
   y,
   groups,
-  pen_method = 1,
   type = "linear",
-  lambda,
+  lambda = "path",
+  path_length = 20,
+  min_frac = 0.05,
   alpha = 0.95,
   vFDR = 0.1,
   gFDR = 0.1,
+  pen_method = 1,
   max_iter = 5000,
   backtracking = 0.7,
   max_iter_backtracking = 100,
   tol = 1e-05,
   standardise = "l2",
   intercept = TRUE,
+  screen = TRUE,
+  verbose = FALSE,
   w_weights = NULL,
-  v_weights = NULL,
-  x0 = NULL,
-  u = NULL,
-  verbose = FALSE
+  v_weights = NULL
 )
 }
 \arguments{
@@ -34,22 +35,30 @@ fit_sgs(
 
 \item{groups}{A grouping structure for the input data. Should take the form of a vector of group indices.}
 
-\item{pen_method}{The type of penalty sequences to use (see Feser et al. (2023)):
+\item{type}{The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.}
+
+\item{lambda}{The regularisation parameter. Defines the level of sparsity in the model. A higher value leads to sparser models:
+\itemize{
+\item \code{"path"} computes a path of regularisation parameters of length \code{"path_length"}. The path will begin just above the value at which the first predictor enters the model and will terminate at the value determined by \code{"min_frac"}.
+\item User-specified single value or sequence. Internal scaling is applied based on the type of standardisation. The returned \code{"lambda"} value will be the original unscaled value(s).
+}}
+
+\item{path_length}{The number of \eqn{\lambda} values to fit the model for. If \code{"lambda"} is user-specified, this is ignored.}
+
+\item{min_frac}{Smallest value of \eqn{\lambda} as a fraction of the maximum value. That is, the final \eqn{\lambda} will be \code{"min_frac"} of the first \eqn{\lambda} value.}
+
+\item{alpha}{The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1. Recommended value is 0.95.}
+
+\item{vFDR}{Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties. Must be between 0 and 1.}
+
+\item{gFDR}{Defines the desired group false discovery rate (FDR) level, which determines the shape of the group penalties. Must be between 0 and 1.}
+
+\item{pen_method}{The type of penalty sequences to use (see Feser and Evangelou (2023)):
 \itemize{
 \item \code{"1"} uses the vMean SGS and gMean gSLOPE sequences.
 \item \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
 \item \code{"3"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
 }}
-
-\item{type}{The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.}
-
-\item{lambda}{The value of \eqn{\lambda}, which defines the level of sparsity in the model. Can be picked using cross-validation (see \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}). Must be a positive value.}
-
-\item{alpha}{The value of \eqn{\alpha}, which defines the convex balance between SLOPE and gSLOPE. Must be between 0 and 1.}
-
-\item{vFDR}{Defines the desired variable false discovery rate (FDR) level, which determines the shape of the variable penalties. Must be between 0 and 1.}
-
-\item{gFDR}{Defines the desired group false discovery rate (FDR) level, which determines the shape of the group penalties. Must be between 0 and 1.}
 
 \item{max_iter}{Maximum number of ATOS iterations to perform.}
 
@@ -61,34 +70,32 @@ fit_sgs(
 
 \item{standardise}{Type of standardisation to perform on \code{X}:
 \itemize{
-\item \code{"l2"} standardises the input data to have \eqn{\ell_2} norms of one.
-\item \code{"l1"} standardises the input data to have \eqn{\ell_1} norms of one.
+\item \code{"l2"} standardises the input data to have \eqn{\ell_2} norms of one. When using this \code{"lambda"} is scaled internally by \eqn{1/\sqrt{n}}.
+\item \code{"l1"} standardises the input data to have \eqn{\ell_1} norms of one. When using this \code{"lambda"} is scaled internally by \eqn{1/n}.
 \item \code{"sd"} standardises the input data to have standard deviation of one.
 \item \code{"none"} no standardisation applied.
 }}
 
 \item{intercept}{Logical flag for whether to fit an intercept.}
 
+\item{screen}{Logical flag for whether to apply screening rules (see Feser and Evangelou (2024)). Screening discards irrelevant groups before fitting, greatly improving speed.}
+
+\item{verbose}{Logical flag for whether to print fitting information.}
+
 \item{w_weights}{Optional vector for the group penalty weights. Overrides the penalties from \code{pen_method} if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.}
 
 \item{v_weights}{Optional vector for the variable penalty weights. Overrides the penalties from \code{pen_method} if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.}
-
-\item{x0}{Optional initial vector for \eqn{x_0}.}
-
-\item{u}{Optional initial vector for \eqn{u}.}
-
-\item{verbose}{Logical flag for whether to print fitting information.}
 }
 \value{
 A list containing:
-\item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{u}, which is usually the former.}
+\item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against code{x} and \code{z}.}
 \item{x}{The solution to the original problem (see Pedregosa et. al. (2018)).}
 \item{u}{The solution to the dual problem (see Pedregosa et. al. (2018)).}
 \item{z}{The updated values from applying the first proximal operator (see Pedregosa et. al. (2018)).}
 \item{type}{Indicates which type of regression was performed.}
 \item{pen_slope}{Vector of the variable penalty sequence.}
 \item{pen_gslope}{Vector of the group penalty sequence.}
-\item{lambda}{Value of \eqn{\lambda} used to fit the model.}
+\item{lambda}{Value(s) of \eqn{\lambda} used to fit the model.}
 \item{success}{Logical flag indicating whether ATOS converged, according to \code{tol}.}
 \item{num_it}{Number of iterations performed. If convergence is not reached, this will be \code{max_iter}.}
 \item{certificate}{Final value of convergence criteria.}
@@ -103,7 +110,7 @@ It solves the convex optimisation problem given by
 \deqn{
   \frac{1}{2n} f(b ; y, \mathbf{X}) + \lambda \alpha \sum_{i=1}^{p}v_i |b|_{(i)} + \lambda (1-\alpha)\sum_{g=1}^{m}w_g \sqrt{p_g} \|b^{(g)}\|_2,
 }
-where \eqn{f(\cdot)} is the loss function. In the case of the linear model, the loss function is given by the mean-squared error loss:
+where the penalty sequences are sorted and \eqn{f(\cdot)} is the loss function. In the case of the linear model, the loss function is given by the mean-squared error loss:
 \deqn{
  f(b; y, \mathbf{X}) = \left\|y-\mathbf{X}b \right\|_2^2.
 }
@@ -122,13 +129,16 @@ The penalty parameters in SGS are sorted so that the largest coefficients are ma
 # specify a grouping structure
 groups = c(1,1,1,2,2,3,3,3,4,4)
 # generate data
-data = generate_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
+data =  gen_toy_data(p=10, n=5, groups = groups, seed_id=3,group_sparsity=1)
 # run SGS 
-model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 1, alpha=0.95, 
+model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", path_length = 5, alpha=0.95, 
 vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 }
 \references{
-F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
+Feser, F., Evangelou, M. (2023). \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
 
-F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://arxiv.org/abs/2405.15357}
+
+Pedregosa, F., Gidel, G. (2018). \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 }
+\concept{SGS-methods}

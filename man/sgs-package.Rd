@@ -2,11 +2,11 @@
 % Please edit documentation in R/sgs-package.R
 \docType{package}
 \name{sgs-package}
+\alias{sgs}
 \alias{sgs-package}
-\alias{_PACKAGE}
 \title{sgs: Sparse-Group SLOPE: Adaptive Bi-Level Selection with FDR Control}
 \description{
-Implementation of Sparse-group SLOPE: Adaptive bi-level with FDR-control (Feser et al. (2023) \href{https://arxiv.org/abs/2305.09467}{arXiv:2305.09467}). Linear and logistic regression models are supported, both of which can be fit using k-fold cross-validation. Dense and sparse input matrices are supported. In addition, a general adaptive three operator splitting (ATOS) implementation is provided.
+Implementation of Sparse-group SLOPE (SGS) (Feser and Evangelou (2023) \href{https://arxiv.org/abs/2305.09467}{arXiv:2305.09467}) models. Linear and logistic regression models are supported, both of which can be fit using k-fold cross-validation. Dense and sparse input matrices are supported. In addition, a general adaptive three operator splitting (ATOS) implementation is provided. Group SLOPE (gSLOPE) (Brzyski et al. (2019) <doi.org/10.1080/01621459.2017.1411269>) models are also implemented. Both gSLOPE and SGS are available with strong screening rules (Feser and Evangelou (2024) \href{https://arxiv.org/abs/2405.15357}{arXiv:2405.15357}) for computational speed-up.
 }
 \seealso{
 Useful links:

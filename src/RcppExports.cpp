@@ -23,9 +23,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// arma_sparse
+arma::mat arma_sparse(const arma::sp_mat& m, const arma::vec& v);
+RcppExport SEXP _sgs_arma_sparse(SEXP mSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::sp_mat& >::type m(mSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type v(vSEXP);
+    rcpp_result_gen = Rcpp::wrap(arma_sparse(m, v));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_sgs_arma_mv", (DL_FUNC) &_sgs_arma_mv, 2},
+    {"_sgs_arma_sparse", (DL_FUNC) &_sgs_arma_sparse, 2},
     {NULL, NULL, 0}
 };
 

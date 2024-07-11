@@ -18,7 +18,7 @@
 #
 ###############################################################################
 
-#' adaptive three operator splitting (ATOS)
+#' Adaptive three operator splitting (ATOS).
 #'
 #' Function for fitting adaptive three operator splitting (ATOS) with general convex penalties. Supports both linear and logistic regression, both with dense and sparse matrix implementations.
 #'
@@ -64,36 +64,7 @@
 #' \item{certificate}{Final value of convergence criteria.}
 #' \item{intercept}{Logical flag indicating whether an intercept was fit.}
 #'
-#' @examples
-#' # specify a grouping structure
-#' groups = c(rep(1:20, each=3),
-#'           rep(21:40, each=4),
-#'           rep(41:60, each=5),
-#'           rep(61:80, each=6),
-#'           rep(81:100, each=7))
-#' # define proximal operators
-#' L1_prox <- function(input, lambda){ # Lasso proximal operator
-#'  out = sign(input) * pmax(0, abs(input) - lambda)
-#'  return(out)
-#' }
-#' group_L1_prox = function(input,lambda,group_info){ 
-#'  n_groups = length(unique(group_info))
-#'  out = rep(0,length(input))
-#'  for (i in 1:n_groups){
-#'    grp_idx = which(group_info == unique(group_info)[i])
-#'    if (lambda == 0 & norm(input[grp_idx],type="2") == 0){ # 0/0 = 0
-#'      out[grp_idx] = 0
-#'    } else {
-#'      out[grp_idx] = max((1-(lambda/norm(input[grp_idx],type="2"))),0) * input[grp_idx]}
-#'  }
-#'  return(out)
-#' }
-#' # generate data
-#' data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
-#' # run atos (the proximal functions can be found in utils.R)
-#' out = atos(X=data$X, y=data$y, type="linear", prox_1 = L1_prox, prox_2 = group_L1_prox, 
-#' standardise="none", intercept=FALSE, prox_2_opts = list(groups))
-#' @references F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+#' @references Pedregosa, F., Gidel, G. (2018). \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 #' @export
 
 atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_prox_2 = 0.5, max_iter = 5000, backtracking = 0.7, max_iter_backtracking = 100, tol = 1e-5,
@@ -125,23 +96,23 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
   # -------------------------------------------------------------
   # pre-process data
   # ------------------------------------------------------------- 
-  num_vars = dim(X)[2]
-  num_obs = dim(X)[1]
-
   if (sum(X==0) > (num_vars*num_obs)/2){
     warnings("X appears to be a sparse matrix. Try converting to dgCMatrix type for improved performance")
   }
-  
-  is_sparse = FALSE
-  crossprod_mat = base::crossprod
+
   if (inherits(X,"dgCMatrix")){ # check if matrix is sparse
     crossprod_mat = Matrix::crossprod
-    is_sparse = TRUE
+    mult_fcn = arma_sparse
+    if (standardise!="none"){
+      stop("standardising a matrix that is sparse. this would remove sparsity of X. set standardise to none")
+    }
+  } else {
+    crossprod_mat = base::crossprod
+    mult_fcn = arma_mv
   }
-
-  if (standardise!="none" & is_sparse){
-    stop("standardising a matrix that is sparse. this would remove sparsity of X. set standardise to none")
-  }
+  
+  num_vars = ncol(X)
+  num_obs = nrow(X)
 
   # standardise
   if (standardise=="none"){
@@ -150,15 +121,16 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
       X_center = 0
       X_scale = 1
     } else {
-      standardise_out = standardise_sgs(X=X,y=y,standardise=standardise,intercept=intercept,num_obs=num_obs,type=type)
+      standardise_out = standardise_data(X=X,y=y,standardise=standardise,intercept=intercept,num_obs=num_obs,type=type)
       X = standardise_out$X
       X_scale = standardise_out$X_scale
       X_center = standardise_out$X_center
       y = standardise_out$y
       y_mean = standardise_out$y_mean
       scale_pen = standardise_out$scale_pen
+      rm(standardise_out)
   }
-
+  
   # -------------------------------------------------------------
   # set values
   # ------------------------------------------------------------- 
@@ -168,34 +140,25 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
 
   # type of model
   if (type == "linear"){ 
-    if (is_sparse){
-      f = mse_loss_sparse
-      f_grad = mse_grad_sparse
-    } else {
-      f = mse_loss
-      f_grad = mse_grad
-    }
+    f_grad = mse_grad
+    f = mse_loss
   } else if (type == "logistic"){
-    if (is_sparse){
-      f = log_loss_sparse
-      f_grad = log_grad_sparse
-    } else {
-      f = log_loss
-      f_grad = log_grad
-    }
+    f_grad = log_grad
+    f = log_loss
   } else {stop("loss function not supported")} 
-  f_opts = list(y=y,X=X,num_obs=num_obs)
-  f_grad_opts = list(y=y,X=X,num_obs=num_obs)
+  
   pen_prox_1 = scale_pen*pen_prox_1
   pen_prox_2 = scale_pen*pen_prox_2
 
   # -------------------------------------------------------------
   # initial fitting values
   # ------------------------------------------------------------- 
-  step_size = 1/init_lipschitz(f=f,f_grad=f_grad, x0=x0, f_opts = f_opts, f_grad_opts = f_grad_opts)
+  tX = Matrix::t(X)
+  step_size = 1/init_lipschitz(f=f,f_grad=f_grad, mult_fcn=mult_fcn, x0=x0, X=X,y=y,num_obs=num_obs, tX=tX, crossprod_mat=crossprod_mat)
   z = do.call(prox_1, c(list(x0, pen_prox_1*step_size), prox_1_opts))
-  fz = do.call(f, c(list(z), f_opts))
-  grad_fz = do.call(f_grad, c(list(z), f_grad_opts)) # gradient at z
+  Xbeta = mult_fcn(X,z)
+  fz = f(y, Xbeta, num_obs, crossprod_mat)
+  grad_fz = mult_fcn(tX,f_grad(y, Xbeta, num_obs)) # loss gradient at z
   if (is.null(u)) {u= rep(0,num_vars)}
   x = do.call(prox_2, c(list(z - step_size * grad_fz, pen_prox_2*step_size), prox_2_opts))
 
@@ -203,8 +166,9 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
   # fitting
   # ------------------------------------------------------------- 
   for (it in 1:max_iter){
-    fz = do.call(f, c(list(z), f_opts))
-    grad_fz = do.call(f_grad, c(list(z), f_grad_opts)) # gradient at z
+    Xbeta = mult_fcn(X,z)
+    fz = f(y, Xbeta, num_obs, crossprod_mat)
+    grad_fz = mult_fcn(tX,f_grad(y, Xbeta, num_obs))
     x = do.call(prox_2, c(list(z - step_size * (u + grad_fz), pen_prox_2*step_size), prox_2_opts))
     incr = x - z
     norm_incr = norm(incr,type="2")
@@ -214,7 +178,7 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
         incr = x - z
         norm_incr = norm(incr,type="2")
         rhs = fz +  crossprod(grad_fz,incr) + (norm_incr ^ 2) / (2 * step_size)
-        ls_tol =  do.call(f, c(list(x), f_opts)) - rhs        
+        ls_tol =  f(y, mult_fcn(X,x), num_obs, crossprod_mat) - rhs        
         if (ls_tol <= LS_EPS){
           break
         }

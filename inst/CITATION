@@ -12,6 +12,20 @@ bibentry(bibtype = "Article",
   header       = "To cite the sparse-group SLOPE method in publications use"
 )
 
+bibentry(bibtype = "Article",
+  title        = "Strong Screening Rules for Group-based SLOPE Models",
+  author       = c(person("Fabio", "Feser",
+   email = "ff120@ic.ac.uk",
+   comment = c(ORCID = "0009-0007-3088-9727")),
+   person("Marina", "Evangelou",
+   comment = c(ORCID = "0000-0003-0789-8944"))),
+  journal      = "arXiv",
+  year         = "2024",
+  doi          = "2405.15357",
+  url          = "arxiv.org/abs/2405.15357",
+  header       = "To cite the screening rules in publications use"
+)
+
 bibentry(bibtype = "Manual",
   title        = "sgs",
   author       = c(person("Fabio", "Feser",

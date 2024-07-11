@@ -2,7 +2,7 @@
 % Please edit documentation in R/atos.R
 \name{atos}
 \alias{atos}
-\title{adaptive three operator splitting (ATOS)}
+\title{Adaptive three operator splitting (ATOS).}
 \usage{
 atos(
   X,
@@ -92,36 +92,6 @@ where \eqn{f} is convex and differentiable with \eqn{L_f}-Lipschitz gradient, an
 The algorithm is not symmetrical, but usually the difference between variations are only small numerical values, which are filtered out.
 However, both variations should be checked regardless, by looking at \code{x} and \code{u}. An example for the sparse-group lasso (SGL) is given.
 }
-\examples{
-# specify a grouping structure
-groups = c(rep(1:20, each=3),
-          rep(21:40, each=4),
-          rep(41:60, each=5),
-          rep(61:80, each=6),
-          rep(81:100, each=7))
-# define proximal operators
-L1_prox <- function(input, lambda){ # Lasso proximal operator
- out = sign(input) * pmax(0, abs(input) - lambda)
- return(out)
-}
-group_L1_prox = function(input,lambda,group_info){ 
- n_groups = length(unique(group_info))
- out = rep(0,length(input))
- for (i in 1:n_groups){
-   grp_idx = which(group_info == unique(group_info)[i])
-   if (lambda == 0 & norm(input[grp_idx],type="2") == 0){ # 0/0 = 0
-     out[grp_idx] = 0
-   } else {
-     out[grp_idx] = max((1-(lambda/norm(input[grp_idx],type="2"))),0) * input[grp_idx]}
- }
- return(out)
-}
-# generate data
-data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
-# run atos (the proximal functions can be found in utils.R)
-out = atos(X=data$X, y=data$y, type="linear", prox_1 = L1_prox, prox_2 = group_L1_prox, 
-standardise="none", intercept=FALSE, prox_2_opts = list(groups))
-}
 \references{
-F. Pedregosa, G. Gidel (2018) \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+Pedregosa, F., Gidel, G. (2018). \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 }

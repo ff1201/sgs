@@ -18,9 +18,9 @@
 #
 ###############################################################################
 
-#' fits the adaptively scaled SGS model (AS-SGS)
+#' Fits the adaptively scaled SGS model (AS-SGS).
 #'
-#' Fits an SGS model using the noise estimation procedure, termed adaptively scaled SGS (Algorithm 2 from Feser et al (2023)). 
+#' Fits an SGS model using the noise estimation procedure, termed adaptively scaled SGS (Algorithm 2 from Feser and Evangelou (2023)). 
 #' This adaptively estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to 
 #' cross-validation ([fit_sgs_cv()]). The approach is only compatible with the SGS penalties.
 #'
@@ -44,38 +44,39 @@
 #' 
 #' @return An object of type \code{"sgs"} containing model fit information (see [fit_sgs()]). 
 #'
-#' @references F. Feser, M. Evangelou \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
+#' @seealso [scaled_sgs()]
+#' @family model-selection, SGS-methods
+#' 
+#' @references Feser, F., Evangelou, M. (2023). \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
 #' @export
 
 as_sgs <- function(X, y, groups, type="linear", pen_method = 2, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise="l2", intercept=TRUE, verbose=FALSE){
-    num_obs=dim(X)[1]
+    num_obs=nrow(X)
     if (intercept) {
-        selected <- 1
-        X_2 = cbind(1,X)
+        selected = 1
+        X_2 = Matrix::cbind2(1,X)
         y_1 = y-mean(y)
     } else {
-        selected <- integer(0)
+        selected = integer(0)
     }
-    out=standardise_sgs(X=X,y=y,standardise,intercept,dim(X)[1])
+    out=standardise_data(X=X,y=y,standardise,intercept,nrow(X))
     selected_prev = 1000
     attempts = 0
     repeat {
         selected_prev_2 = selected_prev
-        selected_prev <- selected
+        selected_prev = selected
         
+        noise_est = estimateNoise(X_2[, selected], y_1, intercept)
+        pens_out = gen_pens_as_sgs(gFDR, vFDR, pen_method=pen_method,groups,alpha,lambda = noise_est)
         
-        noise_est <- estimateNoise(X_2[, selected], y_1, intercept)
-        pens_out = generate_penalties_2(gFDR, vFDR, pen_method=pen_method,groups,alpha,lambda = noise_est)
+        fit = fit_sgs(X=X, y=y, groups=groups, pen_method=pen_method, type, lambda=noise_est*out$scale_pen, alpha=alpha, vFDR=vFDR, gFDR=gFDR,intercept=intercept,
+                       v_weights=pens_out$pen_slope_org,w_weights=pens_out$pen_gslope_org,standardise=standardise, screen = FALSE)
         
-        fit <- fit_sgs(X=X, y=y, groups=groups, pen_method=pen_method, type, lambda=noise_est*out$scale_pen, alpha=alpha, vFDR=vFDR, gFDR=gFDR,intercept=intercept,
-                       v_weights=pens_out$pen_slope_org,w_weights=pens_out$pen_gslope_org,standardise=standardise)
-        
-        selected <- fit$selected_var
         if (intercept) {
-            selected <- union(1, selected+1)
+            selected = union(1, selected+1)
         }
         
-        if (identical(selected, selected_prev) |identical(selected, selected_prev_2)) {
+        if (identical(selected, selected_prev) | identical(selected, selected_prev_2)) {
             break
         }
         if (length(selected) + 1 >= num_obs) {

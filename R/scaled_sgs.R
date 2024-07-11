@@ -18,7 +18,7 @@
 #
 ###############################################################################
 
-#' fits a scaled SGS model
+#' Fits a scaled SGS model.
 #'
 #' Fits an SGS model using the noise estimation procedure (Algorithm 5 from Bogdan et. al. (2015)). This estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to cross-validation ([fit_sgs_cv()]).
 #'
@@ -43,51 +43,52 @@
 #' 
 #' @return An object of type \code{"sgs"} containing model fit information (see [fit_sgs()]). 
 #'
+#' @seealso [as_sgs()]
+#' @family model-selection, SGS-methods
+#' 
 #' @examples
 #' # specify a grouping structure
 #' groups = c(1,1,2,2,3)
 #' # generate data
-#' data = generate_toy_data(p=5, n=4, groups = groups, seed_id=3,
+#' data =  gen_toy_data(p=5, n=4, groups = groups, seed_id=3,
 #' signal_mean=20,group_sparsity=1,var_sparsity=1)
 #' # run noise estimation 
-#' model = scaled_sgs(X=data$X, y=data$y, groups=groups,pen_method=1)
-#' @references M. Bogdan, E. Van den Berg, C. Sabatti, W. Su, E. Candes (2015) \emph{SLOPE — Adaptive variable selection via convex optimization}, \url{https://projecteuclid.org/journals/annals-of-applied-statistics/volume-9/issue-3/SLOPEAdaptive-variable-selection-via-convex-optimization/10.1214/15-AOAS842.full}
+#' model = scaled_sgs(X=data$X, y=data$y, groups=groups, pen_method=1)
+#' @references Bogdan, M., Van den Berg, E., Sabatti, C., Su, W., Candes, E. (2015). \emph{SLOPE — Adaptive variable selection via convex optimization}, \url{https://projecteuclid.org/journals/annals-of-applied-statistics/volume-9/issue-3/SLOPEAdaptive-variable-selection-via-convex-optimization/10.1214/15-AOAS842.full}
 #' @export
 
 scaled_sgs <- function(X, y, groups, type="linear", pen_method = 1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise="l2", intercept=TRUE, verbose=FALSE){
-  # Run Algorithm 5 of Section 3.2.3. (Bogdan et al.) for SGS
-      if (intercept) {
-        selected <- 1
-        X_2 = cbind(1,X)
-        y_1 = y-mean(y)
-      } else {
-        selected <- integer(0)
-      }
-      num_obs=dim(X)[1]
-      out=standardise_sgs(X=X,y=y,standardise,intercept,dim(X)[1])
-      attempts = 0
-      repeat {
-        selected_prev <- selected
+  if (intercept) {
+    selected <- 1
+    X_2 = Matrix::cbind2(1,X)
+    y_1 = y-mean(y)
+  } else {
+    selected = integer(0)
+  }
+  num_obs=nrow(X)
+  out=standardise_data(X=X,y=y,standardise,intercept,nrow(X))
+  attempts = 0
+  repeat {
+    selected_prev = selected
 
-        noise_est <- estimateNoise(X_2[, selected], y_1, intercept)
-        
-        fit <- fit_sgs(X=X, y=y, groups=groups, pen_method=pen_method, lambda=noise_est*out$scale_pen, alpha=alpha, vFDR=vFDR, gFDR=gFDR,intercept=intercept)
-        
-        attempts = attempts + 1
-        if (verbose){print(paste0("Loop number: ", attempts))}
+    noise_est = estimateNoise(X_2[, selected], y_1, intercept)
+    
+    fit = fit_sgs(X=X, y=y, groups=groups, pen_method=pen_method, lambda=noise_est*out$scale_pen, alpha=alpha, vFDR=vFDR, gFDR=gFDR,intercept=intercept,screen=FALSE)
+    
+    attempts = attempts + 1
+    if (verbose){print(paste0("Loop number: ", attempts))}
 
-        selected <- fit$selected_var
-        if (intercept) {
-          selected <- union(1, selected)
-        }
+    if (intercept) {
+      selected = union(1, selected)
+    }
 
-        if (identical(selected, selected_prev)) {
-          break
-        }
+    if (identical(selected, selected_prev)) {
+      break
+    }
 
-        if (length(selected) + 1 >= num_obs) {
-          stop("selected >= n-1 variables; cannot estimate variance")
-        }
-    }  
-return(fit)
+    if (length(selected) + 1 >= num_obs) {
+      stop("selected >= n-1 variables; cannot estimate variance")
+    }
+  }  
+  return(fit)
 } 
