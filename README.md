@@ -36,11 +36,12 @@ groups = c(rep(1:20, each=3),
            rep(61:80, each=6),
            rep(81:100, each=7))
 
-data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+data = gen_toy_data(p=500, n=400, groups = groups, seed_id=3)
 
 model = fit_sgs(X = data$X, y = data$y, groups = groups, vFDR=0.1, gFDR=0.1)
 plot(model)
 ```
+<img src="man/figures/README-sgs-ex.pdf" width="100%" style="display: block; margin: auto;" />
 
 where `X` is the input matrix, `y` the response vector, `groups` a vector containing indices for the groups of the predictors, and `vFDR` and `gFDR` are the the target variable/group false discovery rates. 
 
@@ -54,10 +55,11 @@ groups = c(rep(1:20, each=3),
            rep(61:80, each=6),
            rep(81:100, each=7))
 
-data = generate_toy_data(p=500, n=400, groups = groups, seed_id=3)
+data = gen_toy_data(p=500, n=400, groups = groups, seed_id=3)
 
 model = fit_gslope(X = data$X, y = data$y, groups = groups, gFDR=0.1)
 plot(model)
 ```
+<img src="man/figures/README-gslope-ex.pdf" width="100%" style="display: block; margin: auto;" />
 
 [A more extensive example can be found here](https://github.com/ff1201/sgs/blob/master/vignettes/reproducible_example.Rmd).
