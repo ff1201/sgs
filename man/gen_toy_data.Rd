@@ -32,7 +32,7 @@ gen_toy_data(
 
 \item{grouped}{A logical flag indicating whether grouped data is required.}
 
-\item{groups}{If item{grouped=TRUE}, the grouping structure is required. Each input variable should have a group id.}
+\item{groups}{If \code{grouped=TRUE}, the grouping structure is required. Each input variable should have a group id.}
 
 \item{noise_level}{Defines the level of noise (\eqn{sigma}) to be used in generating the response vector \eqn{y}.}
 
@@ -55,7 +55,7 @@ A list containing:
 \item{y}{The response vector.}
 \item{X}{The input matrix.}
 \item{true_beta}{The true values of \eqn{beta} used to generate the response.}
-\item{true_grp_id}{Indices of which groups are non-zero in item{true_beta}.}
+\item{true_grp_id}{Indices of which groups are non-zero in \code{true_beta}.}
 }
 \description{
 Generates different types of datasets, which can then be fitted using sparse-group SLOPE.

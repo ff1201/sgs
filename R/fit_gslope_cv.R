@@ -61,7 +61,8 @@
 #' \item{best_lambda_id}{The path index for the chosen model.}
 #'
 #' @seealso [fit_gslope()]
-#' @family gSLOPE-methods, model-selection
+#' @family gSLOPE-methods
+#' @family model-selection
 #' 
 #' @examples
 #' # specify a grouping structure
@@ -71,7 +72,7 @@
 #' # run gSLOPE with cross-validation (the proximal functions can be found in utils.R)
 #' cv_model = fit_gslope_cv(X = data$X, y = data$y, groups=groups, type = "linear", path_length = 5, 
 #' nfolds=5, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
-#' @references Brzyski, D., Gossmann, A., Su, W., Bodgan, M. (2019). \emph{Group SLOPE – Adaptive Selection of Groups of Predictors}, \url{https://doi.org/10.1080/01621459.2017.1411269}
+#' @references Brzyski, D., Gossmann, A., Su, W., Bodgan, M. (2019). \emph{Group SLOPE – Adaptive Selection of Groups of Predictors}, \url{https://www.tandfonline.com/doi/full/10.1080/01621459.2017.1411269}
 #' @references Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 #' @export
 

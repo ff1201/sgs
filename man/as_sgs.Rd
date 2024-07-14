@@ -65,8 +65,19 @@ Feser, F., Evangelou, M. (2023). \emph{Sparse-group SLOPE: adaptive bi-level sel
 \seealso{
 \code{\link[=scaled_sgs]{scaled_sgs()}}
 
-Other model-selection, SGS-methods: 
+Other model-selection: 
+\code{\link{fit_gslope_cv}()},
 \code{\link{fit_sgs_cv}()},
 \code{\link{scaled_sgs}()}
+
+Other SGS-methods: 
+\code{\link{coef.sgs}()},
+\code{\link{fit_sgs}()},
+\code{\link{fit_sgs_cv}()},
+\code{\link{plot.sgs}()},
+\code{\link{predict.sgs}()},
+\code{\link{print.sgs}()},
+\code{\link{scaled_sgs}()}
 }
-\concept{model-selection, SGS-methods}
+\concept{SGS-methods}
+\concept{model-selection}

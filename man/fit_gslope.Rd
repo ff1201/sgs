@@ -78,7 +78,7 @@ fit_gslope(
 }
 \value{
 A list containing:
-\item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against code{x} and \code{z}.}
+\item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against \code{x} and \code{z}.}
 \item{group_effects}{The group values from the regression. Taken by applying the \eqn{\ell_2} norm within each group on \code{beta}.}
 \item{selected_var}{A list containing the indicies of the active/selected variables for each \code{"lambda"} value.}
 \item{selected_grp}{A list containing the indicies of the active/selected groups for each \code{"lambda"} value.}
@@ -131,10 +131,18 @@ model = fit_gslope(X = data$X, y = data$y, groups = groups, type="linear", path_
 gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE)
 }
 \references{
-Brzyski, D., Gossmann, A., Su, W., Bodgan, M. (2019). \emph{Group SLOPE – Adaptive Selection of Groups of Predictors}, \url{https://doi.org/10.1080/01621459.2017.1411269}
+Brzyski, D., Gossmann, A., Su, W., Bodgan, M. (2019). \emph{Group SLOPE – Adaptive Selection of Groups of Predictors}, \url{https://www.tandfonline.com/doi/full/10.1080/01621459.2017.1411269}
 
 Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 
 Pedregosa, F., Gidel, G. (2018). \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+}
+\seealso{
+Other gSLOPE-methods: 
+\code{\link{coef.sgs}()},
+\code{\link{fit_gslope_cv}()},
+\code{\link{plot.sgs}()},
+\code{\link{predict.sgs}()},
+\code{\link{print.sgs}()}
 }
 \concept{gSLOPE-methods}

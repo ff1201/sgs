@@ -125,8 +125,19 @@ Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SL
 \seealso{
 \code{\link[=fit_sgs]{fit_sgs()}}
 
-Other model-selection, SGS-methods: 
+Other model-selection: 
 \code{\link{as_sgs}()},
+\code{\link{fit_gslope_cv}()},
+\code{\link{scaled_sgs}()}
+
+Other SGS-methods: 
+\code{\link{as_sgs}()},
+\code{\link{coef.sgs}()},
+\code{\link{fit_sgs}()},
+\code{\link{plot.sgs}()},
+\code{\link{predict.sgs}()},
+\code{\link{print.sgs}()},
 \code{\link{scaled_sgs}()}
 }
-\concept{model-selection, SGS-methods}
+\concept{SGS-methods}
+\concept{model-selection}

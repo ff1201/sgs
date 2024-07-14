@@ -31,9 +31,21 @@ model_coef = coef(model)
 \seealso{
 \code{\link[=fit_sgs]{fit_sgs()}}, \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}, \code{\link[=fit_gslope]{fit_gslope()}}, \code{\link[=fit_gslope_cv]{fit_gslope_cv()}}
 
-Other SGS-methods, gSLOPE-methods: 
+Other SGS-methods: 
+\code{\link{as_sgs}()},
+\code{\link{fit_sgs}()},
+\code{\link{fit_sgs_cv}()},
+\code{\link{plot.sgs}()},
+\code{\link{predict.sgs}()},
+\code{\link{print.sgs}()},
+\code{\link{scaled_sgs}()}
+
+Other gSLOPE-methods: 
+\code{\link{fit_gslope}()},
+\code{\link{fit_gslope_cv}()},
 \code{\link{plot.sgs}()},
 \code{\link{predict.sgs}()},
 \code{\link{print.sgs}()}
 }
-\concept{SGS-methods, gSLOPE-methods}
+\concept{SGS-methods}
+\concept{gSLOPE-methods}

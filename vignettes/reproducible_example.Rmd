@@ -188,7 +188,7 @@ model = fit_gslope(X = data$X, y = data$y, groups = groups, type="linear", lambd
 
 # Screening
 
-Screening rules allow the input dimensionality to be reduced before fitting. The strong screening rules for gSLOPE and SGS are described in detail in [Feser, F., Evangelou, M. (2024). *Strong Screening Rules for Group-based SLOPE Models*]({https://arxiv.org/abs/2405.15357).
+Screening rules allow the input dimensionality to be reduced before fitting. The strong screening rules for gSLOPE and SGS are described in detail in [Feser, F., Evangelou, M. (2024). *Strong Screening Rules for Group-based SLOPE Models*](https://arxiv.org/abs/2405.15357).
 Here, we demonstrate the effectiveness of screening rules by looking at the speed improvement they provide. For SGS:
 
 ```{r}

@@ -106,11 +106,24 @@ cv_model = fit_gslope_cv(X = data$X, y = data$y, groups=groups, type = "linear",
 nfolds=5, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
 }
 \references{
-Brzyski, D., Gossmann, A., Su, W., Bodgan, M. (2019). \emph{Group SLOPE – Adaptive Selection of Groups of Predictors}, \url{https://doi.org/10.1080/01621459.2017.1411269}
+Brzyski, D., Gossmann, A., Su, W., Bodgan, M. (2019). \emph{Group SLOPE – Adaptive Selection of Groups of Predictors}, \url{https://www.tandfonline.com/doi/full/10.1080/01621459.2017.1411269}
 
 Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 }
 \seealso{
 \code{\link[=fit_gslope]{fit_gslope()}}
+
+Other gSLOPE-methods: 
+\code{\link{coef.sgs}()},
+\code{\link{fit_gslope}()},
+\code{\link{plot.sgs}()},
+\code{\link{predict.sgs}()},
+\code{\link{print.sgs}()}
+
+Other model-selection: 
+\code{\link{as_sgs}()},
+\code{\link{fit_sgs_cv}()},
+\code{\link{scaled_sgs}()}
 }
-\concept{gSLOPE-methods, model-selection}
+\concept{gSLOPE-methods}
+\concept{model-selection}

@@ -26,7 +26,8 @@
 #' @param ... further arguments passed to stats function.
 #' 
 #' @seealso [fit_sgs()], [fit_sgs_cv()], [fit_gslope()], [fit_gslope_cv()]
-#' @family SGS-methods, gSLOPE-methods
+#' @family SGS-methods
+#' @family gSLOPE-methods
 #' 
 #' @return The fitted coefficients
 #' 

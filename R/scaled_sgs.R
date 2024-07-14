@@ -44,7 +44,8 @@
 #' @return An object of type \code{"sgs"} containing model fit information (see [fit_sgs()]). 
 #'
 #' @seealso [as_sgs()]
-#' @family model-selection, SGS-methods
+#' @family model-selection
+#' @family SGS-methods
 #' 
 #' @examples
 #' # specify a grouping structure

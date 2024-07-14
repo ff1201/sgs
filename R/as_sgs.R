@@ -45,7 +45,8 @@
 #' @return An object of type \code{"sgs"} containing model fit information (see [fit_sgs()]). 
 #'
 #' @seealso [scaled_sgs()]
-#' @family model-selection, SGS-methods
+#' @family model-selection
+#' @family SGS-methods
 #' 
 #' @references Feser, F., Evangelou, M. (2023). \emph{Sparse-group SLOPE: adaptive bi-level selection with FDR-control}, \url{https://arxiv.org/abs/2305.09467}
 #' @export

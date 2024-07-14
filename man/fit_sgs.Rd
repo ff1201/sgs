@@ -88,7 +88,7 @@ fit_sgs(
 }
 \value{
 A list containing:
-\item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against code{x} and \code{z}.}
+\item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against \code{x} and \code{z}.}
 \item{x}{The solution to the original problem (see Pedregosa et. al. (2018)).}
 \item{u}{The solution to the dual problem (see Pedregosa et. al. (2018)).}
 \item{z}{The updated values from applying the first proximal operator (see Pedregosa et. al. (2018)).}
@@ -140,5 +140,15 @@ Feser, F., Evangelou, M. (2023). \emph{Sparse-group SLOPE: adaptive bi-level sel
 Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://arxiv.org/abs/2405.15357}
 
 Pedregosa, F., Gidel, G. (2018). \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+}
+\seealso{
+Other SGS-methods: 
+\code{\link{as_sgs}()},
+\code{\link{coef.sgs}()},
+\code{\link{fit_sgs_cv}()},
+\code{\link{plot.sgs}()},
+\code{\link{predict.sgs}()},
+\code{\link{print.sgs}()},
+\code{\link{scaled_sgs}()}
 }
 \concept{SGS-methods}

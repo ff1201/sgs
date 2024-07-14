@@ -73,8 +73,19 @@ Bogdan, M., Van den Berg, E., Sabatti, C., Su, W., Candes, E. (2015). \emph{SLOP
 \seealso{
 \code{\link[=as_sgs]{as_sgs()}}
 
-Other model-selection, SGS-methods: 
+Other model-selection: 
 \code{\link{as_sgs}()},
+\code{\link{fit_gslope_cv}()},
 \code{\link{fit_sgs_cv}()}
+
+Other SGS-methods: 
+\code{\link{as_sgs}()},
+\code{\link{coef.sgs}()},
+\code{\link{fit_sgs}()},
+\code{\link{fit_sgs_cv}()},
+\code{\link{plot.sgs}()},
+\code{\link{predict.sgs}()},
+\code{\link{print.sgs}()}
 }
-\concept{model-selection, SGS-methods}
+\concept{SGS-methods}
+\concept{model-selection}

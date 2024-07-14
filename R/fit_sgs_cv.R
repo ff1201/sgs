@@ -66,7 +66,8 @@
 #' \item{type}{Indicates which type of regression was performed.}
 #' 
 #' @seealso [fit_sgs()]
-#' @family model-selection, SGS-methods
+#' @family model-selection
+#' @family SGS-methods
 #' 
 #' @examples
 #' # specify a grouping structure

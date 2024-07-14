@@ -74,7 +74,7 @@
 #' @param w_weights Optional vector for the group penalty weights. Overrides the penalties from \code{pen_method} if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.
 #' 
 #' @return A list containing:
-#' \item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against code{x} and \code{z}.}
+#' \item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against \code{x} and \code{z}.}
 #' \item{x}{The solution to the original problem (see Pedregosa et. al. (2018)).}
 #' \item{u}{The solution to the dual problem (see Pedregosa et. al. (2018)).}
 #' \item{z}{The updated values from applying the first proximal operator (see Pedregosa et. al. (2018)).}
