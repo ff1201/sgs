@@ -1,0 +1,38 @@
+bibentry(bibtype = "Article",
+  title        = "Sparse-group SLOPE: adaptive bi-level selection with FDR-control",
+  author       = c(person("Fabio", "Feser",
+   email = "ff120@ic.ac.uk",
+   comment = c(ORCID = "0009-0007-3088-9727")),
+   person("Marina", "Evangelou",
+   comment = c(ORCID = "0000-0003-0789-8944"))),
+  journal      = "arXiv",
+  year         = "2023",
+  doi          = "10.48550/arXiv.2305.09467",
+  url          = "https://arxiv.org/abs/2305.09467",
+  header       = "To cite the sparse-group SLOPE method in publications use"
+)
+
+bibentry(bibtype = "Article",
+  title        = "Strong Screening Rules for Group-based SLOPE Models",
+  author       = c(person("Fabio", "Feser",
+   email = "ff120@ic.ac.uk",
+   comment = c(ORCID = "0009-0007-3088-9727")),
+   person("Marina", "Evangelou",
+   comment = c(ORCID = "0000-0003-0789-8944"))),
+  journal      = "arXiv",
+  year         = "2024",
+  doi          = "10.48550/arXiv.2405.15357",
+  url          = "https://arxiv.org/abs/2405.15357",
+  header       = "To cite the screening rules in publications use"
+)
+
+bibentry(bibtype = "Manual",
+  title        = "sgs",
+  author       = person("Fabio", "Feser",
+   email = "ff120@ic.ac.uk",
+   comment = c(ORCID = "0009-0007-3088-9727")),
+  year         = "2023",
+  url          = "https://CRAN.R-project.org/package=sgs",
+  header       = "To cite the sgs R package in publications use:"
+)
+

@@ -1,0 +1,212 @@
+---
+title: "sgs reproducible example"
+output: rmarkdown::html_vignette
+author: "Fabio Feser"
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{sgs reproducible example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message=FALSE ,warning=FALSE, tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+# Introduction
+The `sgs` R package fits sparse-group SLOPE (SGS) and group SLOPE (gSLOPE) models. The package has implementations for linear and logisitic regression, both of which are demonstrated here. 
+The package also uses strong screening rules to speed up computational time, described in detail in [F. Feser, M. Evangelou (2024) "Strong Screening Rules for Group-based SLOPE Models"](https://arxiv.org/abs/2405.15357). 
+Screening rules are applied by default here. However, the impact of screening is demonstrated in the Screening section at the end.
+
+# Sparse-group SLOPE
+
+Sparse-group SLOPE (SGS) is a penalised regression approach that performs bi-level selection with FDR control under orthogonal designs. SGS is described in detail in [F. Feser, M. Evangelou (2023) "Sparse-group SLOPE: adaptive bi-level selection with FDR-control"](https://arxiv.org/abs/2305.09467).
+
+## Linear regression
+
+### Data
+
+For this example, a $400 \times 500$ input matrix is used with a simple grouping structure, sampled from a multivariate Gaussian distribution with no correlation. 
+
+```{r}
+library(sgs)
+groups = c(rep(1:20, each=3),
+           rep(21:40, each=4),
+           rep(41:60, each=5),
+           rep(61:80, each=6),
+           rep(81:100, each=7))
+
+data = gen_toy_data(p=500, n=400, groups = groups, seed_id=3)
+```
+
+### Fitting an SGS model
+
+We now fit an SGS model to the data using linear regression. The SGS model has many different hyperparameters which can be tuned/selected. Of particular importance is the $\lambda$ parameter, which defines the level of sparsity in the model. First, we select this manually and then next use cross-validation to tune it. The other parameters we leave as their default values, although they can easily be changed. 
+
+```{r}
+model = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = 0.5, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE, screen=TRUE)
+```
+
+Note: we have fit an intercept and applied $\ell_2$ standardisation. This is the recommended usage when applying SGS with linear regression. The lambda values can also be calculated automatically, starting at the null model and continuing as specified by \texttt{min\_frac} and \texttt{path\_length}:
+
+```{r}
+model_path = fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", lambda = "path", path_length = 5, min_frac = 0.1, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE, screen=TRUE)
+```
+
+### Output of model
+
+The package provides several useful outputs after fitting a model. The \texttt{beta} vector shows the fitted values (note the intercept). We can also recover the indices of the non-zero variables and groups, which are indexed from the first variable, not the intercept. 
+
+```{r}
+model$beta[model$selected_var+1] # the +1 is to account for the intercept
+model$group_effects[model$selected_grp]
+model$selected_var
+model$selected_grp
+```
+
+Defining a function that lets us calculate various metrics (including the FDR and sensitivity):
+```{r}
+fdr_sensitivity = function(fitted_ids, true_ids,num_coef){
+  # calculates FDR, FPR, and sensitivity
+  num_true = length(intersect(fitted_ids,true_ids))
+  num_false = length(fitted_ids) - num_true
+  num_missed = length(true_ids) - num_true
+  num_true_negatives = num_coef - length(true_ids)
+  out=c()
+  out$fdr = num_false / (num_true + num_false)
+  if (is.nan(out$fdr)){out$fdr = 0}
+  out$sensitivity = num_true / length(true_ids)
+  if (length(true_ids) == 0){
+    out$sensitivity = 1
+  }
+  out$fpr = num_false / num_true_negatives
+  out$f1 = (2*num_true)/(2*num_true + num_false + num_missed)
+  if (is.nan(out$f1)){out$f1 = 1}
+  return(out)
+}
+```
+
+Calculating relevant metrics give
+```{r}
+fdr_sensitivity(fitted_ids = model$selected_var, true_ids = data$true_var_id, num_coef = 500)
+fdr_sensitivity(fitted_ids = model$selected_grp, true_ids = data$true_grp_id, num_coef = 100)
+```
+
+The model is currently too sparse, as our choice of $\lambda$ is too high. We can instead use cross-validation.
+
+### Cross validation
+
+Cross-validation is used to fit SGS models along a $\lambda$ path of length $20$. The first value, $\lambda_\text{max}$, is chosen to give the null model and the path is terminated at $\lambda_\text{min} = \delta \lambda_\text{max}$, where $\delta$ is some value between $0$ and $1$ (given by \texttt{min\_frac} in the function). The 1se rule (as in the \texttt{glmnet} package) is used to choose the optimal model.
+```{r}
+cv_model = fit_sgs_cv(X = data$X, y = data$y, groups=groups, type = "linear", path_length = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE, screen = TRUE)
+```
+
+The fitting verbose contains useful information, showing the error for each fold. Aside from the fitting verbose, we can see a more succinct summary by using the \texttt{print} function
+
+```{r}
+print(cv_model)
+```
+
+The best model is found to be the one at the end of the path:
+
+```{r}
+cv_model$best_lambda_id
+```
+
+Checking the metrics again, we see how CV has generated a model with the correct amount of sparsity that gives FDR levels below the specified values.
+
+```{r}
+fdr_sensitivity(fitted_ids = cv_model$fit$selected_var, true_ids = data$true_var_id, num_coef = 500)
+fdr_sensitivity(fitted_ids = cv_model$fit$selected_grp, true_ids = data$true_grp_id, num_coef = 100)
+```
+
+### Plot
+We can visualise the solution using the plot function:
+```{r}
+plot(cv_model,how_many = 10)
+```
+
+### Prediction
+
+The package has an implemented predict function to allow for easy prediction. The predict function can be used on regular and CV model fits. 
+```{r}
+predict(model,data$X)[1:5]
+dim(predict(cv_model,data$X))
+```
+
+## Logistic regression
+
+As mentioned, the package can also be used to fit SGS to a binary response. First, we generate some binary data. We can use the same input matrix, $X$, and true $\beta$ as before.
+We split the data into train and test to test the models classification performance.
+
+```{r}
+sigmoid = function(x) {
+  1 / (1 + exp(-x))
+}
+y = ifelse(sigmoid(data$X %*% data$true_beta + rnorm(400))>0.5,1,0)
+train_y = y[1:350] 
+test_y = y[351:400]
+train_X = data$X[1:350,] 
+test_X = data$X[351:400,]
+```
+
+### Fitting and prediction
+
+We can again apply CV.
+```{r}
+cv_model = fit_sgs_cv(X = train_X, y = train_y, groups=groups, type = "logistic", path_length = 20, nfolds=10, alpha = 0.95, vFDR = 0.1, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=FALSE,verbose=TRUE, screen = TRUE)
+```
+and again, use the predict function
+```{r}
+predictions = predict(cv_model,test_X)
+```
+For logistic regression, the \texttt{predict} function returns both the predicted class probabilities (`response`) and the predicted class (`class`). We can use this to check the prediction accuracy, given as $82\%$.
+```{r}
+predictions$response[1:5,cv_model$best_lambda_id]
+predictions$class[1:5,cv_model$best_lambda_id]
+sum(predictions$class[,cv_model$best_lambda_id] == test_y)/length(test_y)
+```
+
+# Group SLOPE
+
+Group SLOPE (gSLOPE) applies adaptive group penalisation to control the group FDR under orthogonal designs. gSLOPE is described in detail in [Brzyski, D., Gossmann, A., Su, W., Bogdan, M. (2019). *Group SLOPE – Adaptive Selection of Groups of Predictors*](https://doi.org/10.1080/01621459.2017.1411269).
+gSLOPE is implemented in the `sgs` package with the same features as SGS. Here, we briefly demonstrate how to fit a gSLOPE model.
+
+```{r}
+groups = c(rep(1:20, each=3),
+           rep(21:40, each=4),
+           rep(41:60, each=5),
+           rep(61:80, each=6),
+           rep(81:100, each=7))
+
+data = gen_toy_data(p=500, n=400, groups = groups, seed_id=3)
+```
+
+```{r}
+model = fit_gslope(X = data$X, y = data$y, groups = groups, type="linear", lambda = 0.5, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE, screen=TRUE)
+```
+
+# Screening
+
+Screening rules allow the input dimensionality to be reduced before fitting. The strong screening rules for gSLOPE and SGS are described in detail in [Feser, F., Evangelou, M. (2024). *Strong Screening Rules for Group-based SLOPE Models*](https://arxiv.org/abs/2405.15357).
+Here, we demonstrate the effectiveness of screening rules by looking at the speed improvement they provide. For SGS:
+
+```{r}
+screen_time = system.time(model_screen <- fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", path_length = 100, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE, screen=TRUE))
+no_screen_time = system.time(model_no_screen <- fit_sgs(X = data$X, y = data$y, groups = groups, type="linear", path_length = 100, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE, screen=FALSE))
+screen_time
+no_screen_time
+```
+
+and for gSLOPE:
+```{r}
+screen_time = system.time(model_screen <- fit_gslope(X = data$X, y = data$y, groups = groups, type="linear", path_length = 100, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE, screen=TRUE))
+no_screen_time = system.time(model_no_screen <- fit_gslope(X = data$X, y = data$y, groups = groups, type="linear", path_length = 100, gFDR=0.1, standardise = "l2", intercept = TRUE, verbose=FALSE, screen=FALSE))
+screen_time
+no_screen_time
+```
+
+## Reference
+* [Brzyski, D., Gossmann, A., Su, W., Bogdan, M. (2019). *Group SLOPE – Adaptive Selection of Groups of Predictors*](https://doi.org/10.1080/01621459.2017.1411269).
+* [Feser, F., Evangelou, M. (2023). *Sparse-group SLOPE: adaptive bi-level selection with FDR-control*](https://arxiv.org/abs/2305.09467).
+* [Feser, F., Evangelou, M. (2024). *Strong screening rules for group-based SLOPE models*](https://arxiv.org/abs/2405.15357).
