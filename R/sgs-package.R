@@ -10,7 +10,6 @@
 #' @importFrom Matrix as.matrix
 #' @importFrom caret createFolds
 #' @importFrom SLOPE sortedL1Prox
-#' @importFrom faux rnorm_multi
 #' @importFrom MASS mvrnorm
 #' @importFrom Rlab rbern
 #' @importFrom grDevices rainbow

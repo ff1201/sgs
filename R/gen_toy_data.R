@@ -77,7 +77,7 @@ gen_toy_data <- function(p, n, rho=0, seed_id=2, grouped=TRUE, groups, noise_lev
     for (group_id in 1:n_group){
       grp_id = group.id_org[[group_id]]
       set.seed((seed_id^2)*(13+group_id^2))
-      X[,grp_id] = as.matrix(rnorm_multi(n=n,vars=length(grp_id),mu=data_mean,sd=data_sd,r=rho))
+      X[,grp_id] = MASS::mvrnorm(n=n,mu=rep(data_mean,length(grp_id)),Sigma=diag(data_sd-rho,length(grp_id))+matrix(rho,length(grp_id),length(grp_id)))
     }
 
     ind.relevant <- sort(sample(1:n_group, n_group*group_sparsity)) # 10% group sparsity -  indices of relevant groups
@@ -100,7 +100,7 @@ gen_toy_data <- function(p, n, rho=0, seed_id=2, grouped=TRUE, groups, noise_lev
 
   else { # not grouped
     set.seed(seed_id)
-    X = as.matrix(rnorm_multi(n=n,vars=p,mu=data_mean,sd=data_sd,r=rho))
+    X = MASS::mvrnorm(n=n,mu=rep(data_mean,p),Sigma=diag(data_sd-rho,p)+matrix(rho,p,p))
     true_beta <- rep(0, p) # pick true beta values (those with an effect)
     true_ids = which(rbinom(n=p,size=1,prob=var_sparsity)==1)
 

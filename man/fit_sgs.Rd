@@ -110,7 +110,10 @@ It solves the convex optimisation problem given by
 \deqn{
   \frac{1}{2n} f(b ; y, \mathbf{X}) + \lambda \alpha \sum_{i=1}^{p}v_i |b|_{(i)} + \lambda (1-\alpha)\sum_{g=1}^{m}w_g \sqrt{p_g} \|b^{(g)}\|_2,
 }
-where the penalty sequences are sorted and \eqn{f(\cdot)} is the loss function. In the case of the linear model, the loss function is given by the mean-squared error loss:
+where \eqn{f(\cdot)} is the loss function and \eqn{p_g} are the group sizes. The penalty parameters in SGS are sorted so that the largest coefficients are matched with the largest penalties, to reduce the FDR.
+For the variables: \eqn{|\beta|_{(1)}\geq \ldots \geq |\beta|_{(p)}} and \eqn{v_1 \geq \ldots \geq v_p \geq 0}.
+For the groups: \eqn{\sqrt{p_1}\|\beta^{(1)}\|_2 \geq \ldots\geq \sqrt{p_m}\|\beta^{(m)}\|_2} and \eqn{w_1\geq \ldots \geq w_g \geq 0}.
+In the case of the linear model, the loss function is given by the mean-squared error loss:
 \deqn{
  f(b; y, \mathbf{X}) = \left\|y-\mathbf{X}b \right\|_2^2.
 }

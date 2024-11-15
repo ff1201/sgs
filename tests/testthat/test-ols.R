@@ -2,7 +2,7 @@ test_that("unregularized gaussian models reduces to OLS, with no intercept", {
   set.seed(3)
   n=200
   p=10
-  X <- as.matrix(rnorm_multi(n=n,vars=p,mu=0,sd=1,r=0))
+  X <- MASS::mvrnorm(n=n,mu=rep(0,p),Sigma=diag(1,p))
   y <- X %*%rnorm(10,mean=0,sd=sqrt(10)) + rnorm(200,mean=0,sd=1)
 
   groups = 1:p
@@ -24,7 +24,7 @@ test_that("unregularized gaussian models reduces to OLS, with intercept", {
   set.seed(3)
   n=200
   p=10
-  X <- as.matrix(rnorm_multi(n=n,vars=p,mu=0,sd=1,r=0))
+  X <- MASS::mvrnorm(n=n,mu=rep(0,p),Sigma=diag(1,p))
   y <- X %*%rnorm(10,mean=0,sd=sqrt(10)) + rnorm(200,mean=0,sd=1)
   groups = 1:p
   lm_fit = lm(y ~ as.matrix(X))

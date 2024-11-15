@@ -13,7 +13,6 @@ Imports:
     graphics,
     methods,
     stats,
-    faux,
     SLOPE,
     Rlab,
     Rcpp (>= 1.0.10)

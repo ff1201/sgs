@@ -49,6 +49,9 @@ general_fit <- function(X, y, groups, model, path_fcn, var_screen_fcn, grp_scree
   if (any(lambda<0)){
     stop("lambda can not be negative")
   }
+  if (alpha < 0 | alpha > 1){
+    stop("alpha must be in [0,1]")
+  }
   if (gFDR<=0 | gFDR>=1){
     stop("FDR must be in (0,1)")
   }

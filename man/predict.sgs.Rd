@@ -16,7 +16,7 @@
 \value{
 A list containing:
 \item{response}{The predicted response. In the logistic case, this represents the predicted class probabilities.}
-\item{class}{The predicted class assignments. Only returned if type = "logistic" in the \code{"sgs"} object.}
+\item{class}{The predicted class assignments. Only returned if type = "logistic" in the model object.}
 }
 \description{
 Performs prediction from one of the following fits: \code{\link[=fit_sgs]{fit_sgs()}}, \code{\link[=fit_sgs_cv]{fit_sgs_cv()}}, \code{\link[=fit_gslope]{fit_gslope()}}, \code{\link[=fit_gslope_cv]{fit_gslope_cv()}}, \code{\link[=fit_sgo]{fit_sgo()}}, \code{\link[=fit_sgo_cv]{fit_sgo_cv()}}, \code{\link[=fit_goscar]{fit_goscar()}}, \code{\link[=fit_goscar_cv]{fit_goscar_cv()}}. The predictions are calculated for each \code{"lambda"} value in the path.
