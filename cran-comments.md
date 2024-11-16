@@ -12,3 +12,6 @@
 * Added group-based OSCAR models (gOSCAR and SGO).
 * Added more detailed descriptions of the models.
 * Fixed minor bugs.
+
+## Submission 0.3.1
+* Removed faux package, which has become unavailable on CRAN.
