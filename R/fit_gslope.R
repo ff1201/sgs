@@ -81,13 +81,8 @@
 #' @return A list containing:
 #' \item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against \code{x} and \code{z}.}
 #' \item{group_effects}{The group values from the regression. Taken by applying the \eqn{\ell_2} norm within each group on \code{beta}.}
-#' \item{selected_var}{A list containing the indicies of the active/selected variables for each \code{"lambda"} value.}
-#' \item{selected_grp}{A list containing the indicies of the active/selected groups for each \code{"lambda"} value.}
-#' \item{pen_gslope}{Vector of the group penalty sequence.}
-#' \item{lambda}{Value(s) of \eqn{\lambda} used to fit the model.}
-#' \item{type}{Indicates which type of regression was performed.}
-#' \item{standardise}{Type of standardisation used.}
-#' \item{intercept}{Logical flag indicating whether an intercept was fit.}
+#' \item{selected_var}{A list containing the indicies of the active/selected variables for each \code{"lambda"} value. Index 1 corresponds to the first column in X.}
+#' \item{selected_grp}{A list containing the indicies of the active/selected groups for each \code{"lambda"} value. Index 1 corresponds to the first group in the \code{groups} vector.}
 #' \item{num_it}{Number of iterations performed. If convergence is not reached, this will be \code{max_iter}.}
 #' \item{success}{Logical flag indicating whether ATOS converged, according to \code{tol}.}
 #' \item{certificate}{Final value of convergence criteria.}
@@ -97,8 +92,13 @@
 #' \item{screen_set}{List of groups that were kept after screening step for each \code{"lambda"} value. (corresponds to \eqn{\mathcal{S}} in Feser and Evangelou (2024)).}
 #' \item{epsilon_set}{List of groups that were used for fitting after screening for each \code{"lambda"} value. (corresponds to \eqn{\mathcal{E}} in Feser and Evangelou (2024)).}
 #' \item{kkt_violations}{List of groups that violated the KKT conditions each \code{"lambda"} value. (corresponds to \eqn{\mathcal{K}} in Feser and Evangelou (2024)).}
+#' \item{pen_gslope}{Vector of the group penalty sequence.}
 #' \item{screen}{Logical flag indicating whether screening was applied.}
-#'
+#' \item{type}{Indicates which type of regression was performed.}
+#' \item{intercept}{Logical flag indicating whether an intercept was fit.}
+#' \item{standardise}{Type of standardisation used.}
+#' \item{lambda}{Value(s) of \eqn{\lambda} used to fit the model.}
+#' 
 #' @family gSLOPE-methods
 #'
 #' @examples

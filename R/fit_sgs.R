@@ -91,18 +91,29 @@
 #' 
 #' @return A list containing:
 #' \item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against \code{x} and \code{z}.}
+#' \item{group_effects}{The group values from the regression. Taken by applying the \eqn{\ell_2} norm within each group on \code{beta}.}
+#' \item{selected_var}{A list containing the indicies of the active/selected variables for each \code{"lambda"} value. Index 1 corresponds to the first column in X.}
+#' \item{selected_grp}{A list containing the indicies of the active/selected groups for each \code{"lambda"} value. Index 1 corresponds to the first group in the \code{groups} vector.}
+#' \item{num_it}{Number of iterations performed. If convergence is not reached, this will be \code{max_iter}.}
+#' \item{success}{Logical flag indicating whether ATOS converged, according to \code{tol}.}
+#' \item{certificate}{Final value of convergence criteria.}
 #' \item{x}{The solution to the original problem (see Pedregosa and Gidel (2018)).}
-#' \item{u}{The solution to the dual problem (see Pedregosa and Gidel (2018)).}
 #' \item{z}{The updated values from applying the first proximal operator (see Pedregosa and Gidel (2018)).}
-#' \item{type}{Indicates which type of regression was performed.}
+#' \item{u}{The solution to the dual problem (see Pedregosa and Gidel (2018)).}
+#' \item{screen_set_var}{List of variables that were kept after screening step for each \code{"lambda"} value. (corresponds to \eqn{\mathcal{S}_v} in Feser and Evangelou (2024)).}
+#' \item{screen_set_grp}{List of groups that were kept after screening step for each \code{"lambda"} value. (corresponds to \eqn{\mathcal{S}_g} in Feser and Evangelou (2024)).}
+#' \item{epsilon_set_var}{List of variables that were used for fitting after screening for each \code{"lambda"} value. (corresponds to \eqn{\mathcal{E}_v} in Feser and Evangelou (2024)).}
+#' \item{epsilon_set_grp}{List of groups that were used for fitting after screening for each \code{"lambda"} value. (corresponds to \eqn{\mathcal{E}_g} in Feser and Evangelou (2024)).}
+#' \item{kkt_violations_var}{List of variables that violated the KKT conditions each \code{"lambda"} value. (corresponds to \eqn{\mathcal{K}_v} in Feser and Evangelou (2024)).}
+#' \item{kkt_violations_grp}{List of groups that violated the KKT conditions each \code{"lambda"} value. (corresponds to \eqn{\mathcal{K}_g} in Feser and Evangelou (2024)).}
 #' \item{pen_slope}{Vector of the variable penalty sequence.}
 #' \item{pen_gslope}{Vector of the group penalty sequence.}
-#' \item{lambda}{Value(s) of \eqn{\lambda} used to fit the model.}
-#' \item{success}{Logical flag indicating whether ATOS converged, according to \code{tol}.}
-#' \item{num_it}{Number of iterations performed. If convergence is not reached, this will be \code{max_iter}.}
-#' \item{certificate}{Final value of convergence criteria.}
+#' \item{screen}{Logical flag indicating whether screening was performed.}
+#' \item{type}{Indicates which type of regression was performed.}
 #' \item{intercept}{Logical flag indicating whether an intercept was fit.}
-#'
+#  \item{standardise}{Indicates the type of standardisation used.}
+#' \item{lambda}{Value(s) of \eqn{\lambda} used to fit the model.}
+#' 
 #' @family SGS-methods
 #' 
 #' @examples

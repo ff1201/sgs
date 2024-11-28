@@ -15,3 +15,7 @@
 
 ## Submission 0.3.1
 * Removed faux package, which has become unavailable on CRAN.
+
+## Submission 0.3.2
+* Improved documentation.
+* Fixed minor bug with atos.R.

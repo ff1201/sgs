@@ -69,9 +69,12 @@
 
 atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_prox_2 = 0.5, max_iter = 5000, backtracking = 0.7, max_iter_backtracking = 100, tol = 1e-5,
                   prox_1_opts = NULL, prox_2_opts = NULL, standardise = "l2", intercept = TRUE,x0 = NULL, u = NULL,verbose=FALSE){
+  num_vars = ncol(X)
+  num_obs = nrow(X)
+
   # -------------------------------------------------------------
   # checks
-  # ------------------------------------------------------------- 
+  # -------------------------------------------------------------
   if (anyNA(y) | anyNA(X)) {
     stop("input contains missing values")
   }
@@ -81,10 +84,10 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
   if (length(y) == 0) {
     stop("y is empty")
   }
-  if (nrow(X) == 0) {
+  if (num_obs == 0) {
     stop("X is empty")
   }
-  if (length(y) != nrow(X)) {
+  if (length(y) != num_obs) {
     stop("the number of samples in y must match the number of rows in X")
   }
   if (type == "logistic" & !is.binary(y)){
@@ -95,7 +98,7 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
   }
   # -------------------------------------------------------------
   # pre-process data
-  # ------------------------------------------------------------- 
+  # -------------------------------------------------------------
   if (sum(X==0) > (num_vars*num_obs)/2){
     warnings("X appears to be a sparse matrix. Try converting to dgCMatrix type for improved performance")
   }
@@ -110,14 +113,11 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
     crossprod_mat = base::crossprod
     mult_fcn = arma_mv
   }
-  
-  num_vars = ncol(X)
-  num_obs = nrow(X)
 
   # standardise
   if (standardise=="none"){
       scale_pen = 1
-      y_mean = 0 
+      y_mean = 0
       X_center = 0
       X_scale = 1
     } else {
@@ -130,29 +130,29 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
       scale_pen = standardise_out$scale_pen
       rm(standardise_out)
   }
-  
+ 
   # -------------------------------------------------------------
   # set values
-  # ------------------------------------------------------------- 
+  # -------------------------------------------------------------
   if (is.null(x0)) {x0 = rep(0,num_vars)}
   success = 0 # checks whether convergence happened
   LS_EPS = .Machine$double.eps # R accuracy
 
   # type of model
-  if (type == "linear"){ 
+  if (type == "linear"){
     f_grad = mse_grad
     f = mse_loss
   } else if (type == "logistic"){
     f_grad = log_grad
     f = log_loss
-  } else {stop("loss function not supported")} 
-  
+  } else {stop("loss function not supported")}
+ 
   pen_prox_1 = scale_pen*pen_prox_1
   pen_prox_2 = scale_pen*pen_prox_2
 
   # -------------------------------------------------------------
   # initial fitting values
-  # ------------------------------------------------------------- 
+  # -------------------------------------------------------------
   tX = Matrix::t(X)
   step_size = 1/init_lipschitz(f=f,f_grad=f_grad, mult_fcn=mult_fcn, x0=x0, X=X,y=y,num_obs=num_obs, tX=tX, crossprod_mat=crossprod_mat)
   z = do.call(prox_1, c(list(x0, pen_prox_1*step_size), prox_1_opts))
@@ -164,7 +164,7 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
 
   # -------------------------------------------------------------
   # fitting
-  # ------------------------------------------------------------- 
+  # -------------------------------------------------------------
   for (it in 1:max_iter){
     Xbeta = mult_fcn(X,z)
     fz = f(y, Xbeta, num_obs, crossprod_mat)
@@ -178,17 +178,17 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
         incr = x - z
         norm_incr = norm(incr,type="2")
         rhs = fz +  crossprod(grad_fz,incr) + (norm_incr ^ 2) / (2 * step_size)
-        ls_tol =  f(y, mult_fcn(X,x), num_obs, crossprod_mat) - rhs        
+        ls_tol =  f(y, mult_fcn(X,x), num_obs, crossprod_mat) - rhs       
         if (ls_tol <= LS_EPS){
           break
         }
         else {
-        step_size = step_size*backtracking 
+        step_size = step_size*backtracking
         }
       }
     }
 
-    z = do.call(prox_1, c(list(x + step_size * u, pen_prox_1*step_size), prox_1_opts)) 
+    z = do.call(prox_1, c(list(x + step_size * u, pen_prox_1*step_size), prox_1_opts))
     u = u + (x - z) / step_size
     certificate = norm_incr / step_size
 
@@ -205,7 +205,7 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
 
   # -------------------------------------------------------------
   # generate output
-  # ------------------------------------------------------------- 
+  # -------------------------------------------------------------
   out = c()
   if (max((x-z)^2) < 1e-3 & mean((x-z)^2) < 1e-3){ # if solutions are very similar, pick more stable version
     if (length(which(x!=0)) <= length(which(z!=0))){ # Picking the solution with less residual values, if this is true, x is picked
@@ -218,7 +218,7 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
   }
 
   # scale beta depending on transformations
-  if (standardise!="none"){ 
+  if (standardise!="none"){
     out$beta = out$beta/X_scale
   }
 
@@ -227,7 +227,7 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
       threshold_x = quantile(abs(out$beta[which(abs(out$beta)>(1e-4))]))[4]*1e-3
       threshold_x = quantile(abs(out$beta[which(abs(out$beta)>=threshold_x)]))[4]*1e-2
       if (!is.na(threshold_x) & !(pen_prox_1==0 & pen_prox_2==0)){ # When lambda = 0, we don't want to remove small values, as no penalisation is occuring
-        threshold_x = ifelse(threshold_x>1e-2,1e-2, threshold_x) # if threshold too big, set to 1e-2 
+        threshold_x = ifelse(threshold_x>1e-2,1e-2, threshold_x) # if threshold too big, set to 1e-2
         out$beta = ifelse(abs(out$beta)>threshold_x,out$beta,0)
         out$beta = as.matrix(out$beta)
       }
@@ -238,7 +238,7 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
 
   if (intercept){ # get beta back to original scale
     out$beta = as.matrix(c(y_mean - sum(X_center*out$beta),out$beta))
-  } 
+  }
 
   if (is.null(colnames(X))){ # Add variable names to output
     if (intercept){
