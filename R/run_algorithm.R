@@ -45,12 +45,12 @@ run_atos <- function(X, y, groups, groupIDs, pen_slope, pen_gslope, x0, u, wt, n
     grad_fz = mult_fcn(tX,f_grad(y, Xbeta, num_obs))
     x = sortedL1Prox(x=z - (step_size * (u + (grad_fz))), lambda=pen_slope*step_size, method="stack")
     incr = x - z
-    norm_incr = norm(incr,type="2")
+    norm_incr = norm_vec(incr)
     if (norm_incr > 1e-7){
       for (it_ls in 1:max_iter_backtracking){ # Line search
         x = sortedL1Prox(x=z - (step_size * (u + (grad_fz))), lambda=pen_slope*step_size, method="stack")
         incr = x - z
-        norm_incr = norm(incr,type="2")
+        norm_incr = norm_vec(incr)
         rhs = fz + crossprod_mat(grad_fz,incr) + (norm_incr ^ 2) / (2 * step_size)
         ls_tol = f(y, mult_fcn(X,x), num_obs, crossprod_mat) - rhs        
         if (as.numeric(ls_tol) <= as.numeric(LS_EPS)){
@@ -112,14 +112,14 @@ run_atos_log_inter <- function(X, y, groups, groupIDs, pen_slope, pen_gslope, x0
     x = sortedL1Prox(x=prox_input[-1],lambda=pen_slope*step_size)
     x = c(prox_input[1],x)
     incr = x - z
-    norm_incr = norm(incr,type="2")
+    norm_incr = norm_vec(incr)
     if (norm_incr > 1e-7){
       for (it_ls in 1:max_iter_backtracking){ # Line search
         prox_input = z - (step_size * (u + (grad_fz)))
         x = sortedL1Prox(x=prox_input[-1],lambda=pen_slope*step_size)
         x = c(prox_input[1],x)
         incr = x - z
-        norm_incr = norm(incr,type="2")
+        norm_incr = norm_vec(incr)
         rhs = fz + crossprod_mat(grad_fz,incr) + (norm_incr ^ 2) / (2 * step_size)
         ls_tol = f(y, mult_fcn(X,x), num_obs, crossprod_mat) - rhs  
         if (as.numeric(ls_tol) <= as.numeric(LS_EPS)){

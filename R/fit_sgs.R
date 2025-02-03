@@ -42,7 +42,7 @@
 #' \deqn{
 #'  \mathcal{L}(b; y, \mathbf{X}) = \sum_{i=1}^{n}\left\{y_i b^\intercal x_i - \log(1+\exp(b^\intercal x_i)) \right\}.
 #' }
-#' SGS can be seen to be a convex combination of SLOPE and gSLOPE, balanced through \code{alpha}, such that it reduces to SLOPE for \code{alpha = 0} and to gSLOPE for \code{alpha = 1}. 
+#' SGS can be seen to be a convex combination of SLOPE and gSLOPE, balanced through \code{alpha}, such that it reduces to SLOPE for \code{alpha = 1} and to gSLOPE for \code{alpha = 0}. 
 #' The penalty parameters in SGS are sorted so that the largest coefficients are matched with the largest penalties, to reduce the FDR.
 #' For the group penalties, see [fit_gslope()]. For the variable penalties, the vMean SGS sequence (\code{pen_method=1}) (Feser and Evangelou (2023)) is given by 
 #' \deqn{

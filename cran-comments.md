@@ -19,3 +19,6 @@
 ## Submission 0.3.2
 * Improved documentation.
 * Fixed minor bug with atos.R.
+
+## Submission 0.3.3
+* Fixed typo and minor code improvements.

@@ -86,7 +86,7 @@ sgs_convex_opt = function(X,y,beta,groups,num_obs,gslope_seq,slope_seq,intercept
   for (i in 1:length(unique(groups))){
     g_length = table(groups)[i]
     group_lengths[i] = g_length
-    group_norm_sgs[i] = norm(beta[(len_so_far+1):(len_so_far+g_length)],type="2")
+    group_norm_sgs[i] = norm_vec(beta[(len_so_far+1):(len_so_far+g_length)])
     len_so_far = len_so_far+g_length
   }
   if (intercept==TRUE){
@@ -182,7 +182,7 @@ standardise_data <- function(X,y,standardise, intercept,num_obs,type="linear"){
   if (standardise == "l2") { # l2 normalisation
     X_center = apply(X,2,mean)
     X = sapply(1:ncol(X), function(i) X[,i] - X_center[i])
-    X_scale = apply(X,2,function(x) norm(x,type="2"))
+    X_scale = apply(X,2,function(x) norm_vec(x))
     if (any(X_scale==0)){
       stop("not able to standardise X as there exists at least one predictor with no variance")
     }
@@ -236,7 +236,7 @@ which_groups <- function(beta, groups){
   grp_counter = 1
   for (group_id in unique(groups)){
     group_inds = which(groups==group_id)
-    group_effects[grp_counter,]$effect = norm(beta[group_inds], type="2")
+    group_effects[grp_counter,]$effect = norm_vec(beta[group_inds])
     grp_counter = grp_counter+1
   }
   selected_grp = group_effects[which(group_effects$effect!=0),]$group_id
@@ -247,7 +247,7 @@ which_groups <- function(beta, groups){
 l2_group_operator = function(x,P, groupIDs,power){
     out = rep(0,length(groupIDs))
     for (g in 1:length(groupIDs)){
-        out[g] = (P[g]^power)*norm(x[unlist(groupIDs[g])],type="2")
+        out[g] = (P[g]^power)*norm_vec(x[unlist(groupIDs[g])])
     }
     return(out)
 }

@@ -171,12 +171,12 @@ atos <- function(X, y, type = "linear", prox_1, prox_2, pen_prox_1 = 0.5, pen_pr
     grad_fz = mult_fcn(tX,f_grad(y, Xbeta, num_obs))
     x = do.call(prox_2, c(list(z - step_size * (u + grad_fz), pen_prox_2*step_size), prox_2_opts))
     incr = x - z
-    norm_incr = norm(incr,type="2")
+    norm_incr = norm_vec(incr)
     if (norm_incr > 1e-7){
       for (it_ls in 1:max_iter_backtracking){ # Line search
         x = do.call(prox_2, c(list(z - step_size * (u + grad_fz), pen_prox_2*step_size), prox_2_opts))
         incr = x - z
-        norm_incr = norm(incr,type="2")
+        norm_incr = norm_vec(incr)
         rhs = fz +  crossprod(grad_fz,incr) + (norm_incr ^ 2) / (2 * step_size)
         ls_tol =  f(y, mult_fcn(X,x), num_obs, crossprod_mat) - rhs       
         if (ls_tol <= LS_EPS){
