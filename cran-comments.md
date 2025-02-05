@@ -22,3 +22,6 @@
 
 ## Submission 0.3.3
 * Fixed typo and minor code improvements.
+
+## Submission 0.3.4
+* Added a CV fit object to the model class to make prediction easier.

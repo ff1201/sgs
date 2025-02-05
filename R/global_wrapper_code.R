@@ -468,5 +468,6 @@ general_fit_cv = function(X, y, groups, model, path_fcn, type, lambda, path_leng
   out$best_lambda_id = best_lambda_id
   out$errors = output_errors
   class(out) <- paste0(model,"_cv")
+  class(out$fit) <- model
   return(out)
 }
