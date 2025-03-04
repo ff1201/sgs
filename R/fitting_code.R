@@ -33,12 +33,6 @@ fit_path <- function(X,y,groups, groupIDs, type, lambda_path, alpha, intercept, 
   out$group_effects = matrix(0, nrow = num_groups, ncol=path_length)
   out$selected_var = list()
   out$selected_grp = list()
-  out$pen_slope = pen_slope_org
-  out$pen_gslope = pen_gslope_org
-  out$lambda = lambda_path 
-  out$type = type
-  out$standardise = "l2"
-  out$intercept = intercept
   out$num_it = rep(0,path_length)
   out$success = rep(0,path_length)
   out$certificate = rep(0,path_length)
@@ -111,9 +105,6 @@ fit_path <- function(X,y,groups, groupIDs, type, lambda_path, alpha, intercept, 
     }
 
     out$selected_var[[lambda_id]] = which(beta_tmp!=0)
-    which_groups_out = which_groups(beta=beta_tmp,groups=groups)
-    out$selected_grp[[lambda_id]] = which_groups_out[[1]]
-    out$group_effects[,lambda_id] = as.vector(which_groups_out[[2]])
 
     if (intercept){ # get beta back to original scale
       if (type == "linear"){
@@ -215,10 +206,6 @@ fit_one <- function(X,y,groups, groupIDs, type, lambda, alpha, intercept, pen_sl
       }
     }
   }
-  which_groups_out = which_groups(beta=beta_tmp,groups=groups)
-  out$group_effects = which_groups_out[[2]]
-  out$selected_var = which(beta_tmp!=0)
-  out$selected_grp = which_groups_out[[1]]
 
   if (intercept){ # get beta back to original scale
     if (type == "linear"){
@@ -242,12 +229,9 @@ fit_one <- function(X,y,groups, groupIDs, type, lambda, alpha, intercept, pen_sl
       }
   }
   out$beta = beta_tmp
-  out$pen_slope = pen_slope_org
-  out$pen_gslope = pen_gslope_org
-  out$lambda=lambda
-  out$type = type
-  out$standardise = "l2"
-  out$intercept = intercept
+  out$group_effects = matrix(0, nrow = num_groups, ncol=1) 
+  out$selected_var = which(beta_tmp!=0)
+  out$selected_grp = which_groups_active(beta_tmp, groups)
   out$num_it = fit_out$it
   out$success = fit_out$success
   out$certificate = fit_out$certificate

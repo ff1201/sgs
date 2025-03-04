@@ -229,19 +229,24 @@ out$scale_pen = scale_pen
 return(out)
 }
 
-which_groups <- function(beta, groups){
+group_l2_vals <- function(beta, groups){
 # outputs the non-zero group ids and effects from beta values
   num_groups = length(unique(groups))
   group_effects = data.frame(group_id = unique(sort(groups)), effect = rep(0,num_groups))
   grp_counter = 1
   for (group_id in unique(groups)){
     group_inds = which(groups==group_id)
-    group_effects[grp_counter,]$effect = norm_vec(beta[group_inds])
+    group_effects[grp_counter,]$effect = norm(beta[group_inds], type="2")
     grp_counter = grp_counter+1
   }
-  selected_grp = group_effects[which(group_effects$effect!=0),]$group_id
   group_effects = as.vector(group_effects$effect)
-  return(list(selected_grp,group_effects))
+  return(group_effects)
+}
+
+which_groups_active <- function(beta, groups){
+  non_zero_indices = which(beta != 0)
+  non_zero_groups = unique(groups[non_zero_indices])
+  return(non_zero_groups)
 }
 
 l2_group_operator = function(x,P, groupIDs,power){
@@ -263,16 +268,61 @@ path_shape <- function(lambda_max, path_length, min_frac){
   return(lambda_seq)
 }
 
+check_group_vector <- function(vec) {
+  # Check if the vector is sorted and has no gaps
+  is_sorted = all(diff(vec) >= 0)
+  has_no_gaps = all(diff(unique(vec)) == 1)
+  return(is_sorted & has_no_gaps)
+}
+
 reorder_group <- function(groups){
   max_grp_id = length(unique(groups))
   new_grp = rep(0,length(groups))
   all_grp_indices = as.numeric(names(table(groups)))
+  count = 1
   for (i in 1:max_grp_id){
-	  var_ids = which(groups == all_grp_indices[i]) 
-	  new_grp[var_ids] = i
+    var_ids = which(groups == all_grp_indices[i])
+    new_grp[var_ids] = count
+    count = count + 1
   }
 return(new_grp)
 }
+
+reorder_output <- function(out, intercept, order_grp, groups){
+    reverse_order_grp = order(order_grp)
+    if (intercept){
+      out$beta = rbind(out$beta[1,], apply(out$beta[-1,], 2, function(col) col[reverse_order_grp]))
+    } else {
+      out$beta = apply(out$beta, 2, function(col) col[reverse_order_grp])
+    }
+    out$x = apply(out$x, 2, function(col) col[reverse_order_grp])
+    out$z = apply(out$z, 2, function(col) col[reverse_order_grp])
+    out$u = apply(out$u, 2, function(col) col[reverse_order_grp])
+    if ("v_weights" %in% names(out)){out$v_weights = out$v_weights[reverse_order_grp]}
+    out$selected_var = lapply(out$selected_var, function(x) sort(order_grp[x]))
+    out$screen_set_var = lapply(out$screen_set_var, function(x) sort(order_grp[x]))
+    out$epsilon_set_var = lapply(out$epsilon_set_var, function(x) sort(order_grp[x]))
+    out$kkt_violations_var = lapply(out$kkt_violations_var, function(x) {
+                                  if (all(x == 0)) return(x) # Keep all-zero entries as they are
+                                  mapped_indices <- ifelse(x == 0, 0, order_grp[x])
+                                  sort(mapped_indices)
+                                  })
+    order_grp_grp = unique(groups)
+    order_grp_grp_2 = order(unique(groups),decreasing=FALSE)
+    out$group_effects = apply(out$group_effects, 2, function(col) col[order_grp_grp])
+    rownames(out$group_effects) = paste0("G", 1:length(unique(groups)))
+    if ("w_weights" %in% names(out)){out$w_weights = out$w_weights[order_grp_grp]}
+    out$selected_grp = lapply(out$selected_grp, function(x) sort(order_grp_grp_2[x]))
+    out$screen_set_grp = lapply(out$screen_set_grp, function(x) sort(order_grp_grp_2[x]))
+    out$epsilon_set_grp = lapply(out$epsilon_set_grp, function(x) sort(order_grp_grp_2[x]))
+    out$kkt_violations_grp = lapply(out$kkt_violations_grp, function(x) {
+                                  if (all(x == 0)) return(x) # Keep all-zero entries as they are
+                                  mapped_indices <- ifelse(x == 0, 0, order_grp_grp_2[x])
+                                  sort(mapped_indices)
+                                  })
+  return(out)
+}
+
 
 # -------------------------------------------------------------
 # loss and grad functions
@@ -692,12 +742,4 @@ estimateNoise <- function(X, y, intercept = TRUE) {
 
   fit <- stats::lm.fit(X, y)
   sqrt(sum(fit$residuals^2) / (n - p + intercept))
-}
-
-check_group_vector <- function(vec) {
-  # Check if the vector is sorted and has no gaps
-  is_sorted <- all(diff(vec) >= 0)
-  has_no_gaps <- all(diff(unique(vec)) == 1)
-  
-  return(is_sorted && has_no_gaps)
 }

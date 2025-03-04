@@ -25,3 +25,6 @@
 
 ## Submission 0.3.4
 * Added a CV fit object to the model class to make prediction easier.
+
+## Submission 0.3.5
+* Fixed the grouping bug. There is now an internal reordering step if the group indexes have a gap or are not ordered.

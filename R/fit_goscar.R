@@ -59,7 +59,7 @@
 #' \item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against \code{x} and \code{z}.}
 #' \item{group_effects}{The group values from the regression. Taken by applying the \eqn{\ell_2} norm within each group on \code{beta}.}
 #' \item{selected_var}{A list containing the indicies of the active/selected variables for each \code{"lambda"} value. Index 1 corresponds to the first column in X.}
-#' \item{selected_grp}{A list containing the indicies of the active/selected groups for each \code{"lambda"} value. Index 1 corresponds to the first group in the \code{groups} vector.}
+#' \item{selected_grp}{A list containing the indicies of the active/selected groups for each \code{"lambda"} value. Index 1 corresponds to the first group in the \code{groups} vector. You can see the group order by running \code{unique(groups)}.}
 #' \item{num_it}{Number of iterations performed. If convergence is not reached, this will be \code{max_iter}.}
 #' \item{success}{Logical flag indicating whether ATOS converged, according to \code{tol}.}
 #' \item{certificate}{Final value of convergence criteria.}
@@ -99,11 +99,27 @@ fit_goscar <- function(X, y, groups, type="linear", lambda="path", path_length=2
     sigma_3 = sigma_1/m
     w_weights = sapply(1:m, function(x) sigma_1 + sigma_3*(m-x))
   }
-  out = general_fit(X, y, groups, "gslope", gen_path_gslope, NULL, gslope_grp_screen, gslope_kkt_check, type, lambda, path_length, 0, 0.1, 0.1, 3, 
+
+  # check group ordering to ensure no gaps in group numbers and ordered from 1 to m
+  if (check_group_vector(groups)){
+    reorder_id = FALSE
+    ordered_grp_ids = groups
+  } else {
+    reorder_id = TRUE
+    grp_new = reorder_group(groups)
+    order_grp = order(grp_new,decreasing=FALSE)
+    ordered_grp_ids = match(groups[order_grp], sort(unique(groups[order_grp])))
+    X = X[,order_grp]
+  }
+
+  # Run main fitting function
+  out = general_fit(X, y, ordered_grp_ids, "gslope", gen_path_gslope, NULL, gslope_grp_screen, gslope_kkt_check, type, lambda, path_length, 0, 0.1, 0.1, 3, 
                       backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, NULL, w_weights, screen, verbose, FALSE, FALSE)
   
-  out$beta = 
-  out$group_effects = 
-
+  # put group ordering back to original
+  if (reorder_id){
+    out = reorder_output(out, intercept, order_grp, groups)
+  }
+  
   return(out)
 }

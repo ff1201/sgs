@@ -60,7 +60,6 @@ screen_strong <- function(X, y, groups, groupIDs, type, lambda_path, alpha, pen_
   warm_x0 = rep(0,num_vars)
   warm_u = rep(0,num_vars)
   out$beta = matrix(0,nrow=num_vars,ncol=path_length)
-  out$group_effects = matrix(0,nrow=length(tbl_grps),ncol=path_length)
   current_model = do.call(fit_one, c(list(X,y,groups, groupIDs, type, lambda_path[1], alpha=alpha, FALSE, pen_slope_org, pen_gslope_org, x0 = warm_x0, u = warm_u, X_scale = X_scale, X_center=rep(0,num_vars),
   y_mean=rep(0,num_obs), wt=wt, wt_per_grp=tbl_grps_sqrt, model), screen_fitting_options))
   out$beta[,1] = as.vector(current_model$beta)
@@ -157,7 +156,6 @@ screen_strong <- function(X, y, groups, groupIDs, type, lambda_path, alpha, pen_
 
     # prepare output
     out$beta[fitting_var,lambda_id] = as.vector(current_model$beta)
-    out$group_effects[epsilon_set_grp,lambda_id] = current_model$group_effects
     out$epsilon_set_var[[lambda_id]] = epsilon_set_var
     out$epsilon_set_grp[[lambda_id]] = epsilon_set_grp
     out$active_set_grp[[lambda_id]] = current_model$selected_grp

@@ -58,9 +58,6 @@ general_fit <- function(X, y, groups, model, path_fcn, var_screen_fcn, grp_scree
   if (type == "logistic" & intercept == TRUE){
     warning("logistic regression with intercept has a bug. See sgs GitHub page for more details")
   }
-  if (!check_group_vector(groups)){ # check if group indexes ordered correctly
-    warning("group indices are not set from 1, contain gaps, or are not ordered, which can lead to a bug during fitting. See GitHub page for more details.")
-  } 
 
   # identify fit type
   if (any(lambda == "path") | length(lambda) > 1){
@@ -215,9 +212,9 @@ general_fit <- function(X, y, groups, model, path_fcn, var_screen_fcn, grp_scree
     # prepare output
     out = c()
     out$beta = screen_out$beta
-    out$group_effects = screen_out$group_effects
+    out$group_effects = matrix(0, nrow = num_groups, ncol=path_length)
     out$selected_var = screen_out$active_set_var
-    out$selected_grp = screen_out$active_set_grp
+    out$selected_grp = list()
     if (intercept){
       out$beta = apply(out$beta,2,function(x) c(y_mean - sum(X_center*x),x))
     } 
@@ -274,8 +271,24 @@ general_fit <- function(X, y, groups, model, path_fcn, var_screen_fcn, grp_scree
   out$standardise = standardise
   out$intercept = intercept 
   out$lambda = lambda_path
-  out$beta = as(out$beta,"CsparseMatrix")
+  if (fit_type == "single"){
+    out$z = as.matrix(out$z)
+    if (intercept){
+      out$group_effects = group_l2_vals(out$beta[-1], groups)
+    } else {
+      out$group_effects = group_l2_vals(out$beta, groups)
+    }
+    out$selected_grp = which(out$group_effects!=0)
+  } else {
+    if (intercept){
+      out$group_effects = apply(out$beta[-1,], 2, function(x) group_l2_vals(x, groups))
+    } else {
+      out$group_effects = apply(out$beta,2, function(x) group_l2_vals(x, groups))
+    }
+    out$selected_grp = apply(out$group_effects, 2, function(x) which(x!=0))
+  }
   out$group_effects = as(out$group_effects,"CsparseMatrix")
+  out$beta = as(out$beta,"CsparseMatrix")
   rownames(out$group_effects) = paste0("G", 1:num_groups)
   class(out) <- model
   return(out)
@@ -421,19 +434,13 @@ general_fit_cv = function(X, y, groups, model, path_fcn, type, lambda, path_leng
   output_model$group_effects = lambda_model$group_effects[,best_lambda_id]
   output_model$selected_var = lambda_model$selected_var[[best_lambda_id]]
   output_model$selected_grp = lambda_model$selected_grp[[best_lambda_id]]
-  output_model$pen_slope = lambda_model$pen_slope
-  output_model$pen_gslope = lambda_model$pen_gslope
-  output_model$lambda = lambda_model$lambda[best_lambda_id]
-  output_model$type = lambda_model$type
-  output_model$intercept = lambda_model$intercept
-  output_model$standardise = lambda_model$standardise
   output_model$num_it = lambda_model$num_it[best_lambda_id]
   output_model$success = lambda_model$success[best_lambda_id]
   output_model$certificate = lambda_model$certificate[best_lambda_id]
   output_model$x = lambda_model$x[,best_lambda_id]
   output_model$z = lambda_model$z[,best_lambda_id]
   output_model$u = lambda_model$u[,best_lambda_id]
-  output_model$screen = lambda_model$screen
+  
   if (model == "gslope"){
     if (lambda_model$screen){
       output_model$screen_set = lambda_model$screen_set[[best_lambda_id]]
@@ -461,6 +468,14 @@ general_fit_cv = function(X, y, groups, model, path_fcn, type, lambda, path_leng
       output_model$kkt_violations_grp = lambda_model$kkt_violations_grp[[1]] 
     }
   }
+  output_model$pen_slope = lambda_model$pen_slope
+  output_model$pen_gslope = lambda_model$pen_gslope
+  output_model$screen = lambda_model$screen
+  output_model$type = lambda_model$type
+  output_model$intercept = lambda_model$intercept
+  output_model$standardise = lambda_model$standardise
+  output_model$lambda = lambda_model$lambda[best_lambda_id]
+
   out = c()
   out$all_models = lambda_model
   out$fit = output_model
