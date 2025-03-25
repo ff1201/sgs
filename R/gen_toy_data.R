@@ -95,7 +95,7 @@ gen_toy_data <- function(p, n, rho=0, seed_id=2, grouped=TRUE, groups, noise_lev
     out$true_beta = true_beta
     out$y = y
     out$true_var_id = true_ids
-    out$true_grp_id = ind.relevant
+    out$true_grp_id = unique(groups[true_ids])
   }
 
   else { # not grouped

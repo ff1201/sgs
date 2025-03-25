@@ -28,3 +28,6 @@
 
 ## Submission 0.3.5
 * Fixed the grouping bug. There is now an internal reordering step if the group indexes have a gap or are not ordered.
+
+## Submission 0.3.6
+* Fixed a bug with the active group indexes in gen_toy_data.R.
