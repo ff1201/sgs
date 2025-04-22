@@ -214,7 +214,8 @@ fit_one <- function(X,y,groups, groupIDs, type, lambda, alpha, intercept, pen_sl
       }
     }
   }
-
+  out$selected_var = which(beta_tmp!=0)
+  out$selected_grp = which_groups_active(beta_tmp, groups)
   if (intercept){ # get beta back to original scale
     if (type == "linear"){
       beta_tmp = as.matrix(c(y_mean - sum(X_center*beta_tmp),beta_tmp))
@@ -238,8 +239,6 @@ fit_one <- function(X,y,groups, groupIDs, type, lambda, alpha, intercept, pen_sl
   }
   out$beta = beta_tmp
   out$group_effects = matrix(0, nrow = num_groups, ncol=1) 
-  out$selected_var = which(beta_tmp!=0)
-  out$selected_grp = which_groups_active(beta_tmp, groups)
   out$num_it = fit_out$it
   out$success = fit_out$success
   out$certificate = fit_out$certificate

@@ -31,4 +31,6 @@
 
 ## Submission 0.3.6
 * Fixed a bug with the active group indexes in gen_toy_data.R.
+* Fixed bug with selected_var and selected_grp for a single fit.
+* Fixed bug with as_sgs.R
 * Added an additional input to allow users to insert their own warm start vectors.
