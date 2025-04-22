@@ -21,12 +21,12 @@
 # File contains screening code 
 
 screen_strong <- function(X, y, groups, groupIDs, type, lambda_path, alpha, pen_slope_org, pen_gslope_org, X_scale, num_vars, wt, path_length, model, 
-                          var_screen_fcn, grp_screen_fcn, kkt_fcn, num_obs, max_iter, backtracking, max_iter_backtracking, f, f_grad, mult_fcn, crossprod_mat, tol, verbose){
+                          var_screen_fcn, grp_screen_fcn, kkt_fcn, num_obs, max_iter, backtracking, max_iter_backtracking, f, f_grad, mult_fcn, crossprod_mat, tol, verbose, warm_start){
   # -------------------------------------------------------------
   # initial set-up
   # ------------------------------------------------------------- 
   screen_fitting_options = list(num_obs=num_obs, max_iter=max_iter, backtracking=backtracking, max_iter_backtracking = max_iter_backtracking,
-                          f=f,f_grad=f_grad,mult_fcn=mult_fcn,crossprod_mat=crossprod_mat,tol=tol,verbose=FALSE)
+                          f=f,f_grad=f_grad,mult_fcn=mult_fcn,crossprod_mat=crossprod_mat,tol=tol,verbose=FALSE, warm_start=NULL)
                           
   machine_tol = .Machine$double.eps
   out = c()
@@ -57,8 +57,13 @@ screen_strong <- function(X, y, groups, groupIDs, type, lambda_path, alpha, pen_
   # -------------------------------------------------------------
   # Fit model for lambda_max
   # ------------------------------------------------------------- 
-  warm_x0 = rep(0,num_vars)
-  warm_u = rep(0,num_vars)
+  if (is.null(warm_start)){
+    warm_x0 = rep(0,num_vars)
+    warm_u = rep(0,num_vars)
+  } else {
+    warm_x0 = warm_start$warm_x
+    warm_u = warm_start$warm_u
+  }
   out$beta = matrix(0,nrow=num_vars,ncol=path_length)
   current_model = do.call(fit_one, c(list(X,y,groups, groupIDs, type, lambda_path[1], alpha=alpha, FALSE, pen_slope_org, pen_gslope_org, x0 = warm_x0, u = warm_u, X_scale = X_scale, X_center=rep(0,num_vars),
   y_mean=rep(0,num_obs), wt=wt, wt_per_grp=tbl_grps_sqrt, model), screen_fitting_options))
@@ -70,7 +75,6 @@ screen_strong <- function(X, y, groups, groupIDs, type, lambda_path, alpha, pen_
       warm_x0 = current_model$x
       warm_u = current_model$u     
   }
-
   if (verbose){print(paste0("Lambda ", 1,"/",path_length, " done"))}
    
   # -------------------------------------------------------------

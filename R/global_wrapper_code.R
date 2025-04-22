@@ -20,7 +20,7 @@
 
 # File contains general wrapper code for fitting models, preparing the inputs and outputs accordingly
 
-general_fit <- function(X, y, groups, model, path_fcn, var_screen_fcn, grp_screen_fcn, kkt_fcn, type, lambda, path_length, alpha, vFDR, gFDR, pen_method, backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, v_weights, w_weights, screen, verbose, gamma_1, gamma_2){
+general_fit <- function(X, y, groups, model, path_fcn, var_screen_fcn, grp_screen_fcn, kkt_fcn, type, lambda, path_length, alpha, vFDR, gFDR, pen_method, backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, v_weights, w_weights, screen, verbose, gamma_1, gamma_2, warm_start){
  
   # -------------------------------------------------------------
   # checks
@@ -179,7 +179,7 @@ general_fit <- function(X, y, groups, model, path_fcn, var_screen_fcn, grp_scree
   # fitting
   # ------------------------------------------------------------- 
   fitting_options = list(num_obs=num_obs, max_iter=max_iter, backtracking=backtracking, max_iter_backtracking = max_iter_backtracking,
-                          f=f,f_grad=f_grad,mult_fcn=mult_fcn,crossprod_mat=crossprod_mat,tol=tol,verbose=verbose)
+                          f=f,f_grad=f_grad,mult_fcn=mult_fcn,crossprod_mat=crossprod_mat,tol=tol,verbose=verbose, warm_start=warm_start)
  
   if (screen){ # screening
     screen_out = do.call(screen_strong, c(list(X, y, groups, groupIDs, type, lambda_path*scale_pen, alpha, pen_slope_org, pen_gslope_org, 
@@ -294,7 +294,7 @@ general_fit <- function(X, y, groups, model, path_fcn, var_screen_fcn, grp_scree
   return(out)
 }
 
-general_fit_cv = function(X, y, groups, model, path_fcn, type, lambda, path_length, nfolds, alpha, vFDR, gFDR, pen_method, backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, v_weights, w_weights, error_criteria, screen, verbose, gamma_1, gamma_2){
+general_fit_cv = function(X, y, groups, model, path_fcn, type, lambda, path_length, nfolds, alpha, vFDR, gFDR, pen_method, backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, v_weights, w_weights, error_criteria, screen, verbose, gamma_1, gamma_2, warm_start){
   num_vars = ncol(X)
   num_obs = nrow(X)
   num_groups = length(unique(groups))
@@ -365,9 +365,9 @@ general_fit_cv = function(X, y, groups, model, path_fcn, type, lambda, path_leng
   output_errors = data.frame(lambda=lambda_path,error_criteria=rep(0,path_length), num_non_zero = rep(0,path_length))
 
   if (model == "sgs"){
-    lambda_model = fit_sgs(X=X, y=y, groups=groups, type=type, lambda=lambda_path, path_length=path_length, alpha=alpha, max_iter = max_iter, backtracking = backtracking, max_iter_backtracking = max_iter_backtracking, tol = tol, standardise=standardise, intercept=intercept, screen = screen, verbose = FALSE, v_weights = pen_slope_org, w_weights = pen_gslope_org)
+    lambda_model = fit_sgs(X=X, y=y, groups=groups, type=type, lambda=lambda_path, path_length=path_length, alpha=alpha, max_iter = max_iter, backtracking = backtracking, max_iter_backtracking = max_iter_backtracking, tol = tol, standardise=standardise, intercept=intercept, screen = screen, verbose = FALSE, v_weights = pen_slope_org, w_weights = pen_gslope_org, warm_start = warm_start)
   } else if (model == "gslope"){
-    lambda_model = fit_gslope(X=X, y=y, groups=groups, type=type, lambda=lambda_path, path_length=path_length,max_iter=max_iter, backtracking=backtracking, max_iter_backtracking=max_iter_backtracking, tol=tol, standardise=standardise, intercept=intercept, w_weights=pen_gslope_org, screen=screen, verbose=FALSE)
+    lambda_model = fit_gslope(X=X, y=y, groups=groups, type=type, lambda=lambda_path, path_length=path_length,max_iter=max_iter, backtracking=backtracking, max_iter_backtracking=max_iter_backtracking, tol=tol, standardise=standardise, intercept=intercept, w_weights=pen_gslope_org, screen=screen, verbose=FALSE, warm_start = warm_start)
   }
 
   # -------------------------------------------------------------
@@ -387,10 +387,10 @@ general_fit_cv = function(X, y, groups, model, path_fcn, type, lambda, path_leng
     # Fit Model
     if (model == "sgs"){
       cv_model = fit_sgs(X=as.matrix(Train_X), y=as.matrix(Train_y), groups=groups, type=type, lambda=lambda_path, alpha=alpha, max_iter=max_iter, backtracking=backtracking, max_iter_backtracking=max_iter_backtracking, tol=tol, standardise=standardise, intercept=intercept,
-         v_weights= pen_slope_org, w_weights = pen_gslope_org, screen = screen, verbose = FALSE)
+         v_weights= pen_slope_org, w_weights = pen_gslope_org, screen = screen, verbose = FALSE, warm_start = warm_start)
     } else if (model == "gslope"){
       cv_model = fit_gslope(X=as.matrix(Train_X), y=as.matrix(Train_y), groups=groups, type=type, lambda=lambda_path, max_iter=max_iter, backtracking=backtracking, max_iter_backtracking=max_iter_backtracking, tol=tol, standardise=standardise, intercept=intercept,
-         w_weights = pen_gslope_org, screen = screen, verbose = FALSE)
+         w_weights = pen_gslope_org, screen = screen, verbose = FALSE, warm_start = warm_start)
     }
      
     # Error

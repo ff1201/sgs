@@ -22,7 +22,8 @@ fit_sgo(
   screen = TRUE,
   verbose = FALSE,
   w_weights = NULL,
-  v_weights = NULL
+  v_weights = NULL,
+  warm_start = NULL
 )
 }
 \arguments{
@@ -71,6 +72,8 @@ fit_sgo(
 \item{w_weights}{Optional vector for the group penalty weights. Overrides the OSCAR penalties when specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.}
 
 \item{v_weights}{Optional vector for the variable penalty weights. Overrides the OSCAR penalties when specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.}
+
+\item{warm_start}{Optional list for implementing warm starts. These values are used as initial values in the fitting algorithm. Need to supply \code{"x"} and \code{"u"} in the form \code{"list(warm_x, warm_u)"}. Not recommended for use with a path or CV fit as start from the null model by design.}
 }
 \value{
 A list containing:

@@ -54,7 +54,8 @@
 #' @param screen Logical flag for whether to apply screening rules (see Feser and Evangelou (2024)). Screening discards irrelevant groups before fitting, greatly improving speed.
 #' @param verbose Logical flag for whether to print fitting information.
 #' @param w_weights Optional vector for the group penalty weights. Overrides the OSCAR penalties when specified. When entering custom weights, these are multiplied internally by \eqn{\lambda}. To void this behaviour, set \eqn{\lambda = 1}.
-#' 
+#' @param warm_start Optional list for implementing warm starts. These values are used as initial values in the fitting algorithm. Need to supply \code{"x"} and \code{"u"} in the form \code{"list(warm_x, warm_u)"}. Not recommended for use with a path or CV fit as start from the null model by design.
+#'
 #' @return A list containing:
 #' \item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against \code{x} and \code{z}.}
 #' \item{group_effects}{The group values from the regression. Taken by applying the \eqn{\ell_2} norm within each group on \code{beta}.}
@@ -87,11 +88,11 @@
 #' model = fit_goscar(X = data$X, y = data$y, groups = groups, type="linear", path_length = 5, 
 #' standardise = "l2", intercept = TRUE, verbose=FALSE)
 #' @references Bao, R., Gu B., Huang, H. (2020). \emph{Fast OSCAR and OWL Regression via Safe Screening Rules}, \url{https://proceedings.mlr.press/v119/bao20b}
-#' @references Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+#' @references Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://arxiv.org/abs/2405.15357}
 #' @references Pedregosa, F., Gidel, G. (2018). \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 #' @export
 
-fit_goscar <- function(X, y, groups, type="linear", lambda="path", path_length=20, min_frac=0.05, max_iter=5000, backtracking=0.7, max_iter_backtracking=100, tol=1e-5, standardise="l2", intercept=TRUE, screen=TRUE, verbose=FALSE, w_weights=NULL){
+fit_goscar <- function(X, y, groups, type="linear", lambda="path", path_length=20, min_frac=0.05, max_iter=5000, backtracking=0.7, max_iter_backtracking=100, tol=1e-5, standardise="l2", intercept=TRUE, screen=TRUE, verbose=FALSE, w_weights=NULL, warm_start = NULL){
   if (is.null(w_weights)){
     # create pen weights
     m = length(unique(groups))
@@ -114,7 +115,7 @@ fit_goscar <- function(X, y, groups, type="linear", lambda="path", path_length=2
 
   # Run main fitting function
   out = general_fit(X, y, ordered_grp_ids, "gslope", gen_path_gslope, NULL, gslope_grp_screen, gslope_kkt_check, type, lambda, path_length, 0, 0.1, 0.1, 3, 
-                      backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, NULL, w_weights, screen, verbose, FALSE, FALSE)
+                      backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, NULL, w_weights, screen, verbose, FALSE, FALSE, warm_start)
   
   # put group ordering back to original
   if (reorder_id){

@@ -56,7 +56,8 @@
 #' @param verbose Logical flag for whether to print fitting information.
 #' @param v_weights Optional vector for the variable penalty weights. Overrides the OSCAR penalties when specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.
 #' @param w_weights Optional vector for the group penalty weights. Overrides the OSCAR penalties when specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.
-#' 
+#' @param warm_start Optional list for implementing warm starts. These values are used as initial values in the fitting algorithm. Need to supply \code{"x"} and \code{"u"} in the form \code{"list(warm_x, warm_u)"}. Not recommended for use with a path or CV fit as start from the null model by design.
+#'
 #' @return A list containing:
 #' \item{beta}{The fitted values from the regression. Taken to be the more stable fit between \code{x} and \code{z}, which is usually the former. A filter is applied to remove very small values, where ATOS has not been able to shrink exactly to zero. Check this against \code{x} and \code{z}.}
 #' \item{group_effects}{The group values from the regression. Taken by applying the \eqn{\ell_2} norm within each group on \code{beta}.}
@@ -98,7 +99,7 @@
 #' @references Pedregosa, F., Gidel, G. (2018). \emph{Adaptive Three Operator Splitting}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
 #' @export
 
-fit_sgo <- function(X, y, groups, type="linear", lambda="path", path_length=20, min_frac=0.05, alpha=0.95, max_iter=5000, backtracking=0.7, max_iter_backtracking=100, tol=1e-5, standardise="l2", intercept=TRUE, screen=TRUE, verbose=FALSE, w_weights=NULL, v_weights=NULL){
+fit_sgo <- function(X, y, groups, type="linear", lambda="path", path_length=20, min_frac=0.05, alpha=0.95, max_iter=5000, backtracking=0.7, max_iter_backtracking=100, tol=1e-5, standardise="l2", intercept=TRUE, screen=TRUE, verbose=FALSE, w_weights=NULL, v_weights=NULL, warm_start = NULL){
   if (is.null(v_weights) & is.null(w_weights)){
     # create pen weights
     p = ncol(X)
@@ -124,7 +125,7 @@ fit_sgo <- function(X, y, groups, type="linear", lambda="path", path_length=20, 
 
   # Run main fitting function
   out = general_fit(X, y, ordered_grp_ids, "sgs", gen_path_sgs, sgs_var_screen, sgs_grp_screen, sgs_kkt_check, type, lambda, path_length, alpha, 0.1, 0.1, 3, 
-                      backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, v_weights, w_weights, screen, verbose, FALSE, FALSE)
+                      backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, v_weights, w_weights, screen, verbose, FALSE, FALSE, warm_start)
   
   # put group ordering back to original
   if (reorder_id){

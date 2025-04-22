@@ -52,6 +52,7 @@
 #' @param screen Logical flag for whether to apply screening rules (see Feser and Evangelou (2024)). Screening discards irrelevant groups before fitting, greatly improving speed.
 #' @param verbose Logical flag for whether to print fitting information.
 #' @param w_weights Optional vector for the group penalty weights. Overrides the penalties from \code{pen_method} if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda}. To void this behaviour, set \eqn{\lambda = 1}.
+#' @param warm_start Optional list for implementing warm starts. These values are used as initial values in the fitting algorithm. Need to supply \code{"x"} and \code{"u"} in the form \code{"list(warm_x, warm_u)"}. Not recommended for use with a path or CV fit as start from the null model by design.
 #'
 #' @return A list containing:
 #' \item{errors}{A table containing fitting information about the models on the path.}
@@ -73,10 +74,10 @@
 #' cv_model = fit_gslope_cv(X = data$X, y = data$y, groups=groups, type = "linear", path_length = 5, 
 #' nfolds=5, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
 #' @references Brzyski, D., Gossmann, A., Su, W., Bodgan, M. (2019). \emph{Group SLOPE – Adaptive Selection of Groups of Predictors}, \url{https://www.tandfonline.com/doi/full/10.1080/01621459.2017.1411269}
-#' @references Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+#' @references Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://arxiv.org/abs/2405.15357}
 #' @export
 
-fit_gslope_cv = function(X, y, groups, type = "linear", lambda = "path", path_length = 20, min_frac = 0.05, nfolds=10, gFDR = 0.1, pen_method=1, backtracking = 0.7, max_iter = 5000, max_iter_backtracking = 100, tol = 1e-5, standardise= "l2", intercept = TRUE, error_criteria = "mse", screen=TRUE, verbose = FALSE, w_weights = NULL){
+fit_gslope_cv = function(X, y, groups, type = "linear", lambda = "path", path_length = 20, min_frac = 0.05, nfolds=10, gFDR = 0.1, pen_method=1, backtracking = 0.7, max_iter = 5000, max_iter_backtracking = 100, tol = 1e-5, standardise= "l2", intercept = TRUE, error_criteria = "mse", screen=TRUE, verbose = FALSE, w_weights = NULL, warm_start = NULL){
   if (pen_method == 1){
     pen_method_gslope = 3
   } else if (pen_method == 2){
@@ -86,6 +87,6 @@ fit_gslope_cv = function(X, y, groups, type = "linear", lambda = "path", path_le
   }
   out = general_fit_cv(X, y, groups, "gslope", gen_path_gslope, type, lambda, path_length, nfolds, 0, 0.1, gFDR, pen_method_gslope, 
                       backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, NULL, w_weights, 
-                      error_criteria, screen, verbose, FALSE, FALSE)
+                      error_criteria, screen, verbose, FALSE, FALSE, warm_start)
   return(out)
 }

@@ -50,7 +50,8 @@
 #' @param verbose Logical flag for whether to print fitting information.
 #' @param v_weights Optional vector for the variable penalty weights. Overrides the OSCAR penalties when specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.
 #' @param w_weights Optional vector for the group penalty weights. Overrides the OSCAR penalties when specified. When entering custom weights, these are multiplied internally by \eqn{\lambda} and \eqn{1-\alpha}. To void this behaviour, set \eqn{\lambda = 2} and \eqn{\alpha = 0.5}.
-#' 
+#' @param warm_start Optional list for implementing warm starts. These values are used as initial values in the fitting algorithm. Need to supply \code{"x"} and \code{"u"} in the form \code{"list(warm_x, warm_u)"}. Not recommended for use with a path or CV fit as start from the null model by design.
+#'
 #' @return A list containing:
 #' \item{all_models}{A list of all the models fitted along the path.}
 #' \item{fit}{The 1se chosen model, which is a \code{"sgs"} object type.}
@@ -77,7 +78,7 @@
 #' @references Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://arxiv.org/abs/2405.15357}
 #' @export
 
-fit_sgo_cv = function(X, y, groups, type = "linear", lambda="path", path_length = 20, min_frac = 0.05, alpha = 0.95, nfolds=10, backtracking = 0.7, max_iter = 5000, max_iter_backtracking = 100, tol = 1e-5, standardise= "l2", intercept = TRUE, error_criteria = "mse", screen=TRUE, verbose = FALSE, v_weights = NULL, w_weights = NULL){
+fit_sgo_cv = function(X, y, groups, type = "linear", lambda="path", path_length = 20, min_frac = 0.05, alpha = 0.95, nfolds=10, backtracking = 0.7, max_iter = 5000, max_iter_backtracking = 100, tol = 1e-5, standardise= "l2", intercept = TRUE, error_criteria = "mse", screen=TRUE, verbose = FALSE, v_weights = NULL, w_weights = NULL , warm_start = NULL){
   if (is.null(v_weights) & is.null(w_weights)){
     # create pen weights
     p = ncol(X)
@@ -90,6 +91,6 @@ fit_sgo_cv = function(X, y, groups, type = "linear", lambda="path", path_length 
   }  
   out = general_fit_cv(X, y, groups, "sgs", gen_path_sgs, type, lambda, path_length, nfolds, alpha, 0.1, 0.1, 3, 
                       backtracking, max_iter, max_iter_backtracking, tol, min_frac, standardise, intercept, v_weights, w_weights, 
-                      error_criteria, screen, verbose, FALSE, FALSE)
+                      error_criteria, screen, verbose, FALSE, FALSE, warm_start)
   return(out)
 }

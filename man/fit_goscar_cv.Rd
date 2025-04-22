@@ -22,7 +22,8 @@ fit_goscar_cv(
   error_criteria = "mse",
   screen = TRUE,
   verbose = FALSE,
-  w_weights = NULL
+  w_weights = NULL,
+  warm_start = NULL
 )
 }
 \arguments{
@@ -71,6 +72,8 @@ fit_goscar_cv(
 \item{verbose}{Logical flag for whether to print fitting information.}
 
 \item{w_weights}{Optional vector for the group penalty weights. Overrides the OSCAR penalties when specified. When entering custom weights, these are multiplied internally by \eqn{\lambda}. To void this behaviour, set \eqn{\lambda = 1}.}
+
+\item{warm_start}{Optional list for implementing warm starts. These values are used as initial values in the fitting algorithm. Need to supply \code{"x"} and \code{"u"} in the form \code{"list(warm_x, warm_u)"}. Not recommended for use with a path or CV fit as start from the null model by design.}
 }
 \value{
 A list containing:
@@ -98,7 +101,7 @@ nfolds=5, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=TRUE)
 \references{
 Bao, R., Gu B., Huang, H. (2020). \emph{Fast OSCAR and OWL Regression via Safe Screening Rules}, \url{https://proceedings.mlr.press/v119/bao20b}
 
-Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://arxiv.org/abs/2405.15357}
 }
 \seealso{
 \code{\link[=fit_goscar]{fit_goscar()}}

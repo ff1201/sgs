@@ -21,7 +21,7 @@
 # File contains functions for fitting a single SGS/gSLOPE model or a pathwise solution
 
 fit_path <- function(X,y,groups, groupIDs, type, lambda_path, alpha, intercept, pen_slope_org, pen_gslope_org, X_scale, X_center, y_mean, wt, wt_per_grp, model_type,
-                        num_vars, num_groups, path_length, num_obs, max_iter, backtracking, max_iter_backtracking, f, f_grad, mult_fcn, crossprod_mat, tol, verbose){
+                        num_vars, num_groups, path_length, num_obs, max_iter, backtracking, max_iter_backtracking, f, f_grad, mult_fcn, crossprod_mat, tol, verbose, warm_start){
   machine_tol = .Machine$double.eps
 
   # penalty checks
@@ -46,7 +46,10 @@ fit_path <- function(X,y,groups, groupIDs, type, lambda_path, alpha, intercept, 
     # -------------------------------------------------------------
     # run ATOS
     # ------------------------------------------------------------- 
-    if (lambda_id == 1 | all(abs(out$x[,lambda_id-1]) <= machine_tol) | all(abs(out$u[,lambda_id-1]) <= machine_tol) ){
+    if (lambda_id == 1 & !is.null(warm_start)){
+      warm_x = warm_start$warm_x
+      warm_u = warm_start$warm_u
+    } else if (lambda_id == 1 | all(abs(out$x[,lambda_id-1]) <= machine_tol) | all(abs(out$u[,lambda_id-1]) <= machine_tol) ){
       warm_x = rep(0,num_vars)
       warm_u = rep(0,num_vars)
     } else {
@@ -141,7 +144,7 @@ fit_path <- function(X,y,groups, groupIDs, type, lambda_path, alpha, intercept, 
 }
 
 fit_one <- function(X,y,groups, groupIDs, type, lambda, alpha, intercept, pen_slope_org, pen_gslope_org, x0=rep(0,ncol(X)), u=rep(0,ncol(X)), X_scale, X_center, 
-                        y_mean=rep(0,nrow(X)), wt, wt_per_grp, model_type, num_obs, max_iter, backtracking, max_iter_backtracking, f, f_grad, mult_fcn, crossprod_mat, tol, verbose){
+                        y_mean=rep(0,nrow(X)), wt, wt_per_grp, model_type, num_obs, max_iter, backtracking, max_iter_backtracking, f, f_grad, mult_fcn, crossprod_mat, tol, verbose, warm_start){
   # penalty checks
   if (any(pen_slope_org < 0) | any(pen_gslope_org < 0)){
     stop("penalty sequences must be positive")
@@ -152,6 +155,11 @@ fit_one <- function(X,y,groups, groupIDs, type, lambda, alpha, intercept, pen_sl
   # weights
   pen_slope = alpha*lambda*pen_slope_org
   pen_gslope = (1-alpha)*lambda*pen_gslope_org
+
+  if (!is.null(warm_start)){
+    x0 = warm_start$warm_x
+    u = warm_start$warm_u
+  }
 
   # -------------------------------------------------------------
   # run ATOS

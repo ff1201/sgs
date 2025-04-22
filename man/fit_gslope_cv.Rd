@@ -24,7 +24,8 @@ fit_gslope_cv(
   error_criteria = "mse",
   screen = TRUE,
   verbose = FALSE,
-  w_weights = NULL
+  w_weights = NULL,
+  warm_start = NULL
 )
 }
 \arguments{
@@ -81,6 +82,8 @@ fit_gslope_cv(
 \item{verbose}{Logical flag for whether to print fitting information.}
 
 \item{w_weights}{Optional vector for the group penalty weights. Overrides the penalties from \code{pen_method} if specified. When entering custom weights, these are multiplied internally by \eqn{\lambda}. To void this behaviour, set \eqn{\lambda = 1}.}
+
+\item{warm_start}{Optional list for implementing warm starts. These values are used as initial values in the fitting algorithm. Need to supply \code{"x"} and \code{"u"} in the form \code{"list(warm_x, warm_u)"}. Not recommended for use with a path or CV fit as start from the null model by design.}
 }
 \value{
 A list containing:
@@ -108,7 +111,7 @@ nfolds=5, gFDR = 0.1, min_frac = 0.05, standardise="l2",intercept=TRUE,verbose=T
 \references{
 Brzyski, D., Gossmann, A., Su, W., Bodgan, M. (2019). \emph{Group SLOPE – Adaptive Selection of Groups of Predictors}, \url{https://www.tandfonline.com/doi/full/10.1080/01621459.2017.1411269}
 
-Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://proceedings.mlr.press/v80/pedregosa18a.html}
+Feser, F., Evangelou, M. (2024). \emph{Strong screening rules for group-based SLOPE models}, \url{https://arxiv.org/abs/2405.15357}
 }
 \seealso{
 \code{\link[=fit_gslope]{fit_gslope()}}
