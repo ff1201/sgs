@@ -34,3 +34,6 @@
 * Fixed bug with selected_var and selected_grp for a single fit.
 * Fixed bug with as_sgs.R
 * Added an additional input to allow users to insert their own warm start vectors.
+
+## Submission 0.3.7
+* Updated scaled regression functions to include all SLOPE models.

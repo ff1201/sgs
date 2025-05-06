@@ -53,26 +53,31 @@
 
 as_sgs <- function(X, y, groups, type="linear", pen_method = 2, alpha=0.95, vFDR=0.1, gFDR=0.1, standardise="l2", intercept=TRUE, verbose=FALSE){
     num_obs=nrow(X)
+    out=standardise_data(X=X,y=y,standardise,intercept,num_obs)
     if (intercept) {
-        selected = 1
-        X_2 = Matrix::cbind2(1,X)
-        y_1 = y-mean(y)
+        selected <- 1
+        X_2 = Matrix::cbind2(1,out$X)
     } else {
-        selected = integer(0)
+        selected <- integer(0)
     }
-    out=standardise_data(X=X,y=y,standardise,intercept,nrow(X))
-    selected_prev = 1000
     attempts = 0
+    fit = c()
+    fit$x = rep(0,ncol(X))
+    fit$u = rep(0,ncol(X))
+    all_noise_vals = c()
     repeat {
         selected_prev = selected
         
-        noise_est = estimateNoise(X_2[, selected], y_1, intercept)
-        pens_out = gen_pens_as_sgs(gFDR, vFDR, pen_method=pen_method,groups,alpha,lambda = noise_est)
-        
+        if (intercept){
+          noise_est = estimateNoise(X_2[, c(1, 1+selected)], out$y, intercept)
+        } else{
+          noise_est = estimateNoise(X_2[, selected], out$y, intercept)
+        }
+        pens_out = gen_pens_as_sgs(gFDR, vFDR, pen_method=pen_method, groups, alpha, lambda = noise_est)
         fit = fit_sgs(X=X, y=y, groups=groups, pen_method=pen_method, type, lambda=noise_est*out$scale_pen, alpha=alpha, vFDR=vFDR, gFDR=gFDR,intercept=intercept,
-                       v_weights=pens_out$pen_slope_org,w_weights=pens_out$pen_gslope_org, standardise=standardise, screen = FALSE)
+              v_weights=pens_out$pen_slope_org,w_weights=pens_out$pen_gslope_org, standardise=standardise, screen = FALSE, warm_start = list(warm_x = fit$x, warm_u = fit$u))
         selected = fit$selected_var
-
+        all_noise_vals = c(all_noise_vals, noise_est)
         if (identical(selected, selected_prev)) {
             break
         }
@@ -80,11 +85,20 @@ as_sgs <- function(X, y, groups, type="linear", pen_method = 2, alpha=0.95, vFDR
             break
         }
         attempts = attempts+1
+        if (attempts == 1){ # this is to avoid warm starts being used at the first iteration, as there's usually a big jump in lambda
+            fit$x = rep(0,ncol(X))
+            fit$u = rep(0,ncol(X))
+        }
         if (verbose){print(paste0("Loop number: ", attempts))}
 
         if (attempts >= 100){
             break
         }
     }  
-    return(fit)
+    out = c()
+    out$fit = fit
+    out$noise = noise_est
+    out$all_noise_vals = all_noise_vals
+    out$attempts = attempts
+    return(out)
 } 

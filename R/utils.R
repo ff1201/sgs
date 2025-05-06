@@ -464,20 +464,39 @@ gen_pens_as_sgs <- function(gFDR, vFDR, pen_method,groups,alpha,lambda){
   num_groups = length(unique(groups))
   if (pen_method == 1){ # SGS variable mean
     pen_slope_org = BH_sequence(q=vFDR,p=num_vars)
-    pen_gslope_org = grp_pen_as_sgs_mean(q=gFDR,pen_v=pen_slope_org,repeats=1e5,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp)
-    pen_slope_org = sgs_var_penalty(q=vFDR, pen_g=pen_gslope_org,p=num_vars,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp,method="max")
+    pen_gslope_org = grp_pen_as_sgs_mean(q=gFDR,pen_v=pen_slope_org,repeats=1e4,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp)[[1]]
+    pen_gslope_org = ifelse(pen_gslope_org < 0, 0, pen_gslope_org)
+    pen_slope_org = sgs_var_penalty(q=vFDR, pen_g=pen_gslope_org,p=num_vars,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp,method="mean")
+    pen_slope_org = ifelse(pen_slope_org < 0, 0, pen_slope_org)
   } else if (pen_method == 2){ # SGS variable max
     pen_slope_org = BH_sequence(q=vFDR,p=num_vars)
-    pen_gslope_org = grp_pen_as_sgs_max(q=gFDR,pen_v=pen_slope_org,repeats=1e5,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp)[[1]]
+    pen_gslope_org = grp_pen_as_sgs_max(q=gFDR,pen_v=pen_slope_org,repeats=1e5,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp)
+    pen_gslope_org = ifelse(pen_gslope_org < 0, 0, pen_gslope_org)
+    pen_slope_org = sgs_var_penalty(q=vFDR, pen_g=pen_gslope_org,p=num_vars,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp,method="max")
+    pen_slope_org = ifelse(pen_slope_org < 0, 0, pen_slope_org)
+  } else if  (pen_method == 3){ # SGS variable mean (reversed order)
+    pen_gslope_org = lambdaChiOrtho(fdr=gFDR, n.group=num_groups, wt=wt_per_grp,
+                           group.sizes=len_each_grp, method="mean")
     pen_slope_org = sgs_var_penalty(q=vFDR, pen_g=pen_gslope_org,p=num_vars,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp,method="mean")
-  } else {stop("method choice not valid")}
+    pen_slope_org = ifelse(pen_slope_org < 0, 0, pen_slope_org)
+    pen_gslope_org = grp_pen_as_sgs_mean(q=gFDR,pen_v=pen_slope_org,repeats=1e4,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp)[[1]]
+    pen_gslope_org = ifelse(pen_gslope_org < 0, 0, pen_gslope_org)
+  } else if (pen_method == 4){ # SGS variable max (reversed order)
+    pen_gslope_org = lambdaChiOrtho(fdr=gFDR, n.group=num_groups, wt=wt_per_grp,
+                           group.sizes=len_each_grp, method="mean")
+    pen_slope_org = sgs_var_penalty(q=vFDR, pen_g=pen_gslope_org,p=num_vars,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp,method="max")
+    pen_slope_org = ifelse(pen_slope_org < 0, 0, pen_slope_org)
+    pen_gslope_org = grp_pen_as_sgs_max(q=gFDR,pen_v=pen_slope_org,repeats=1e5,lambda=lambda,alpha=alpha,m=num_groups,group.sizes=len_each_grp)
+    pen_gslope_org = ifelse(pen_gslope_org < 0, 0, pen_gslope_org)
+  }
+  else {stop("method choice not valid")}
   out=c()
   out$pen_slope_org = pen_slope_org
   out$pen_gslope_org = pen_gslope_org
   return(out)
 }
 
-grp_pen_as_sgs_mean <- function(q, pen_v, repeats, lambda, alpha, m, group.sizes){
+grp_pen_as_sgs_max <- function(q, pen_v, repeats, lambda, alpha, m, group.sizes){
   lambda.max = rep(0, m)
   lambda.min = rep(0, m)
   num_repeats = repeats / length(group.sizes)
@@ -499,7 +518,7 @@ grp_pen_as_sgs_mean <- function(q, pen_v, repeats, lambda, alpha, m, group.sizes
   return(lambda.max)
 }
 
-grp_pen_as_sgs_max <- function(q, pen_v, repeats, lambda, alpha, m, group.sizes){
+grp_pen_as_sgs_mean <- function(q, pen_v, repeats, lambda, alpha, m, group.sizes){
     lambda.max = rep(0, m)
     lambda.min = rep(0, m)
     num_repeats = repeats / length(group.sizes)

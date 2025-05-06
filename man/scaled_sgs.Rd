@@ -2,12 +2,13 @@
 % Please edit documentation in R/scaled_sgs.R
 \name{scaled_sgs}
 \alias{scaled_sgs}
-\title{Fits a scaled SGS model.}
+\title{Fits a scaled regression SLOPE-based.}
 \usage{
 scaled_sgs(
   X,
   y,
   groups,
+  model = "sgs",
   type = "linear",
   pen_method = 1,
   alpha = 0.95,
@@ -25,12 +26,14 @@ scaled_sgs(
 
 \item{groups}{A grouping structure for the input data. Should take the form of a vector of group indices.}
 
+\item{model}{The type of model to fit. Supported values are: \code{"sgs"} and \code{"gslope"}.}
+
 \item{type}{The type of regression to perform. Supported values are: \code{"linear"} and \code{"logistic"}.}
 
 \item{pen_method}{The type of penalty sequences to use.
 \itemize{
-\item \code{"1"} uses the vMean SGS and gMean gSLOPE sequences.
-\item \code{"2"} uses the vMax SGS and gMean gSLOPE sequences.
+\item \code{"1"} uses the vMean SGS and gMean gSLOPE sequences. For the gSLOPE model, uses the mean sequence.
+\item \code{"2"} uses the vMax SGS and gMean gSLOPE sequences. For the gSLOPE model, uses the max sequence.
 \item \code{"1"} uses the BH SLOPE and gMean gSLOPE sequences, also known as SGS Original.
 }}
 
@@ -56,7 +59,7 @@ scaled_sgs(
 An object of type \code{"sgs"} containing model fit information (see \code{\link[=fit_sgs]{fit_sgs()}}).
 }
 \description{
-Fits an SGS model using the noise estimation procedure (Algorithm 5 from Bogdan et al. (2015)). This estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to cross-validation (\code{\link[=fit_sgs_cv]{fit_sgs_cv()}}).
+Fits a scaled regression SLOPE-based model using the noise estimation procedure (Algorithm 5 from Bogdan et al. (2015)). This estimates \eqn{\lambda} and then fits the model using the estimated value. It is an alternative approach to cross-validation (\code{\link[=fit_sgs_cv]{fit_sgs_cv()}}).
 }
 \examples{
 # specify a grouping structure
