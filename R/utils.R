@@ -735,7 +735,7 @@ proxGroupSortedL1 <- function(y, lambda,group, group_id, num_groups) {
   }
 
   # get Euclidean norms of the solution vector
-  prox_norm <- sortedL1Prox(x=group_norm, lambda=lambda, method="stack")
+  prox_norm <- sortedL1Prox(x=group_norm, lambda=lambda)
 
   # compute the solution
   prox_solution <- rep(NA, length(y))
